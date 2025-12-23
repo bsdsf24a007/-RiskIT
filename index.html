@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,12 +26,19 @@
             url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
           background-attachment: fixed;
           -webkit-font-smoothing: antialiased;
+          overflow-x: hidden;
         }
 
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+        /* Fix for potential text overflow in various browsers */
+        * {
+          min-width: 0;
+          min-height: 0;
+        }
       }
 
       @layer components {
@@ -46,14 +54,13 @@
         }
 
         .title-fluid {
-          @apply font-black italic uppercase leading-[0.85] tracking-tighter text-white;
-          font-size: clamp(1.8rem, 8vw, 6rem);
-          word-break: break-word;
+          @apply font-black italic uppercase leading-[0.85] tracking-tighter text-white break-words;
+          font-size: clamp(2rem, 10vw, 5.5rem);
         }
 
         .field-input {
           @apply w-full bg-zinc-950/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm font-medium
-                 text-white placeholder-zinc-700 outline-none transition-all focus:border-emerald-500/50
+                 text-white placeholder-zinc-800 outline-none transition-all focus:border-emerald-500/50
                  focus:ring-1 focus:ring-emerald-500/20 shadow-inner;
         }
 
@@ -74,11 +81,19 @@
         }
 
         .animate-marquee {
-          animation: marquee 40s linear infinite;
+          animation: marquee 60s linear infinite;
         }
         @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
+        }
+
+        /* Responsive utilities for truncating news and strategies */
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       }
     </style>
