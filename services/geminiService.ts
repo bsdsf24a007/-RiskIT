@@ -164,7 +164,8 @@ export const getComparison = async (s1: string, s2: string, market: string, hala
 
 export const getAnalysis = async (ticker: string, market: string, horizon: string, halal: boolean): Promise<AnalysisResponse> => {
   const key = getApiKey();
-  const systemInstruction = `Audit ticker/index. Return JSON: { "ticker": "string", "name": "string", "health": float, "desc": "string", "short": "string", "long": "string", "metrics": [{"label": "string", "value": "string", "status": "positive|negative|neutral"}], "sentiment": [{"label": "string", "score": int}], "catalysts": [{"title": "string", "impact": "high|medium|low"}] }`;
+  const systemInstruction = `Audit ticker/index. MANDATORY: The 'sentiment' array MUST contain exactly two objects: one for "Bullish Sentiment" and one for "Bearish Sentiment". 
+  Return JSON: { "ticker": "string", "name": "string", "health": float, "desc": "string", "short": "string", "long": "string", "metrics": [{"label": "string", "value": "string", "status": "positive|negative|neutral"}], "sentiment": [{"label": "string", "score": int}], "catalysts": [{"title": "string", "impact": "high|medium|low"}] }`;
   const prompt = `Deep Audit: ${ticker} in ${market}. Halal: ${halal}.`;
 
   if (key.startsWith("gsk_")) {
@@ -202,6 +203,8 @@ export const getAnalysis = async (ticker: string, market: string, horizon: strin
           },
           sentiment: {
             type: Type.ARRAY,
+            minItems: 2,
+            maxItems: 2,
             items: {
               type: Type.OBJECT,
               properties: {
