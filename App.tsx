@@ -55,28 +55,38 @@ const CardLoader: React.FC<{ label?: string }> = ({ label = "Synthesizing Data..
   </div>
 );
 
-const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: () => void }> = ({ message, onRetry, onDismiss }) => (
-  <div className="absolute inset-0 bg-black/98 backdrop-blur-2xl z-[70] flex flex-col items-center justify-center p-12 text-center animate-in zoom-in-95">
-    <div className="w-20 h-20 mb-8 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
-      <OctagonAlert className="text-rose-500 animate-pulse" size={40} />
+const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: () => void }> = ({ message, onRetry, onDismiss }) => {
+  const isQuota = message.includes('429');
+  const isKeyError = message.includes('403') || message.includes('API_KEY_INVALID');
+  
+  return (
+    <div className="absolute inset-0 bg-black/98 backdrop-blur-2xl z-[70] flex flex-col items-center justify-center p-12 text-center animate-in zoom-in-95">
+      <div className="w-20 h-20 mb-8 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
+        <OctagonAlert className="text-rose-500 animate-pulse" size={40} />
+      </div>
+      <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter mb-4">Logic Pipeline Exhausted</h3>
+      <p className="text-zinc-500 text-sm max-w-md mb-6 font-medium leading-relaxed uppercase tracking-wider">
+        {isQuota 
+          ? "Your Gemini API key has exceeded its current quota. Please wait a few minutes or redeploy your app after updating the key." 
+          : isKeyError
+          ? "The system cannot verify your API Identity. Ensure 'API_KEY' is set correctly in Vercel and redeploy."
+          : `An unexpected disruption occurred: ${message.slice(0, 100)}...`}
+      </p>
+      <div className="bg-zinc-900/50 p-3 rounded-lg border border-white/5 mb-10 overflow-hidden max-w-xs">
+        <p className="text-[8px] font-mono text-zinc-600 break-all uppercase">Debug Info: {message.slice(0, 50)}</p>
+      </div>
+      <div className="flex gap-4 w-full max-w-xs">
+        <button onClick={onRetry} className="flex-1 py-4 bg-white text-black font-black uppercase text-[11px] tracking-widest rounded-xl hover:bg-zinc-200 transition-all">Retry Link</button>
+        <button onClick={onDismiss} className="flex-1 py-4 border border-zinc-800 text-zinc-500 font-black uppercase text-[11px] tracking-widest rounded-xl hover:border-zinc-400 transition-all">Dismiss</button>
+      </div>
+      <div className="mt-8">
+        <a href="https://aistudio.google.com/app/billing" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline flex items-center gap-2">
+          <ExternalLink size={12} /> Check Billing Status
+        </a>
+      </div>
     </div>
-    <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter mb-4">Logic Pipeline Exhausted</h3>
-    <p className="text-zinc-500 text-sm max-w-md mb-10 font-medium leading-relaxed uppercase tracking-wider">
-      {message.includes('429') 
-        ? "Your Gemini API key has exceeded its current quota. Please wait a few minutes or upgrade your plan in Google AI Studio." 
-        : "An unexpected disruption occurred in the neural bridge. Verification required."}
-    </p>
-    <div className="flex gap-4 w-full max-w-xs">
-      <button onClick={onRetry} className="flex-1 py-4 bg-white text-black font-black uppercase text-[11px] tracking-widest rounded-xl hover:bg-zinc-200 transition-all">Retry Link</button>
-      <button onClick={onDismiss} className="flex-1 py-4 border border-zinc-800 text-zinc-500 font-black uppercase text-[11px] tracking-widest rounded-xl hover:border-zinc-400 transition-all">Dismiss</button>
-    </div>
-    <div className="mt-8">
-      <a href="https://aistudio.google.com/app/billing" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline flex items-center gap-2">
-        <ExternalLink size={12} /> Check Billing Status
-      </a>
-    </div>
-  </div>
-);
+  );
+};
 
 const NodeRow: React.FC<{ ticker: string; name: string; trend: number[]; onClick?: () => void }> = ({ ticker, name, trend, onClick }) => {
   const hasVariance = trend.some(v => v !== trend[0]);
@@ -211,7 +221,9 @@ export default function App() {
   }, [activeTab]);
 
   const handleError = (e: any) => {
-    const errorMsg = e?.message || String(e);
+    // Log full error for developer debugging in console
+    console.error("FULL API ERROR OBJECT:", e);
+    const errorMsg = e?.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
     setApiError(errorMsg);
     setLoading(false);
   };
