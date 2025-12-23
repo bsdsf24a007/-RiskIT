@@ -57,7 +57,7 @@ const CardLoader: React.FC<{ label?: string }> = ({ label = "Synthesizing Data..
 
 const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: () => void }> = ({ message, onRetry, onDismiss }) => {
   const isQuota = message.includes('429');
-  const isKeyError = message.includes('403') || message.includes('API_KEY_INVALID');
+  const isKeyError = message.includes('403') || message.includes('400') || message.includes('API_KEY_INVALID') || message.includes('BUILD_ERROR');
   
   return (
     <div className="absolute inset-0 bg-black/98 backdrop-blur-2xl z-[70] flex flex-col items-center justify-center p-12 text-center animate-in zoom-in-95">
@@ -67,22 +67,18 @@ const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: 
       <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter mb-4">Logic Pipeline Exhausted</h3>
       <p className="text-zinc-500 text-sm max-w-md mb-6 font-medium leading-relaxed uppercase tracking-wider">
         {isQuota 
-          ? "Your Gemini API key has exceeded its current quota. Please wait a few minutes or redeploy your app after updating the key." 
+          ? "Your Gemini API key has exceeded its current quota. Please wait a few minutes or upgrade your plan." 
           : isKeyError
-          ? "The system cannot verify your API Identity. Ensure 'API_KEY' is set correctly in Vercel and redeploy."
+          ? "CRITICAL: API Identity Mismatch. You MUST update 'API_KEY' in Vercel and TRIGGER A NEW DEPLOYMENT (Redeploy) for changes to take effect."
           : `An unexpected disruption occurred: ${message.slice(0, 100)}...`}
       </p>
-      <div className="bg-zinc-900/50 p-3 rounded-lg border border-white/5 mb-10 overflow-hidden max-w-xs">
-        <p className="text-[8px] font-mono text-zinc-600 break-all uppercase">Debug Info: {message.slice(0, 50)}</p>
+      <div className="bg-zinc-900/50 p-4 rounded-xl border border-white/5 mb-10 overflow-hidden max-w-md">
+        <p className="text-[9px] font-mono text-emerald-500 mb-1 font-bold uppercase tracking-widest">Action Required:</p>
+        <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">Vercel -> Project -> Settings -> Environment Variables -> Edit 'API_KEY' -> Save -> Go to Deployments -> Redeploy</p>
       </div>
       <div className="flex gap-4 w-full max-w-xs">
         <button onClick={onRetry} className="flex-1 py-4 bg-white text-black font-black uppercase text-[11px] tracking-widest rounded-xl hover:bg-zinc-200 transition-all">Retry Link</button>
         <button onClick={onDismiss} className="flex-1 py-4 border border-zinc-800 text-zinc-500 font-black uppercase text-[11px] tracking-widest rounded-xl hover:border-zinc-400 transition-all">Dismiss</button>
-      </div>
-      <div className="mt-8">
-        <a href="https://aistudio.google.com/app/billing" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline flex items-center gap-2">
-          <ExternalLink size={12} /> Check Billing Status
-        </a>
       </div>
     </div>
   );

@@ -1,8 +1,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { RecommendationResponse, ComparisonResponse, AnalysisResponse, GroundingSource } from "../types";
 
-// Always initialize with the direct environment variable as per global instructions
-const getClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to get the key and warn if it looks like a build-time failure
+const getApiKey = () => {
+  const key = process.env.API_KEY;
+  if (!key || key === "undefined" || key === "null" || key.length < 10) {
+    throw new Error("BUILD_ERROR: API_KEY was missing during Vercel build. REDEPLOY REQUIRED.");
+  }
+  return key;
+};
+
+const getClient = () => new GoogleGenAI({ apiKey: getApiKey() });
 
 const extractSources = (response: any): GroundingSource[] => {
   const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
