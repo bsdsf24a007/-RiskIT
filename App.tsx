@@ -4,7 +4,7 @@ import {
   Layers, RefreshCw, Trophy, Search, Network, TrendingUp,
   ShieldCheck, Clock, Globe, BarChart3, Activity, ExternalLink, Info,
   TrendingDown, Zap, Shield, Flame, ChevronRight, AlertCircle, CheckCircle2,
-  Gauge, TrendingUp as BullIcon, TrendingDown as BearIcon
+  Gauge, TrendingUp as BullIcon, TrendingDown as BearIcon, OctagonAlert
 } from 'lucide-react';
 import { 
   TabType, RecommendationResponse, ComparisonResponse, AnalysisResponse, GroundingSource 
@@ -55,8 +55,30 @@ const CardLoader: React.FC<{ label?: string }> = ({ label = "Synthesizing Data..
   </div>
 );
 
+const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: () => void }> = ({ message, onRetry, onDismiss }) => (
+  <div className="absolute inset-0 bg-black/98 backdrop-blur-2xl z-[70] flex flex-col items-center justify-center p-12 text-center animate-in zoom-in-95">
+    <div className="w-20 h-20 mb-8 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
+      <OctagonAlert className="text-rose-500 animate-pulse" size={40} />
+    </div>
+    <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter mb-4">Logic Pipeline Exhausted</h3>
+    <p className="text-zinc-500 text-sm max-w-md mb-10 font-medium leading-relaxed uppercase tracking-wider">
+      {message.includes('429') 
+        ? "Your Gemini API key has exceeded its current quota. Please wait a few minutes or upgrade your plan in Google AI Studio." 
+        : "An unexpected disruption occurred in the neural bridge. Verification required."}
+    </p>
+    <div className="flex gap-4 w-full max-w-xs">
+      <button onClick={onRetry} className="flex-1 py-4 bg-white text-black font-black uppercase text-[11px] tracking-widest rounded-xl hover:bg-zinc-200 transition-all">Retry Link</button>
+      <button onClick={onDismiss} className="flex-1 py-4 border border-zinc-800 text-zinc-500 font-black uppercase text-[11px] tracking-widest rounded-xl hover:border-zinc-400 transition-all">Dismiss</button>
+    </div>
+    <div className="mt-8">
+      <a href="https://aistudio.google.com/app/billing" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline flex items-center gap-2">
+        <ExternalLink size={12} /> Check Billing Status
+      </a>
+    </div>
+  </div>
+);
+
 const NodeRow: React.FC<{ ticker: string; name: string; trend: number[]; onClick?: () => void }> = ({ ticker, name, trend, onClick }) => {
-  // Enforce variance for sparklines to avoid flat green lines
   const hasVariance = trend.some(v => v !== trend[0]);
   const processedTrend = hasVariance 
     ? trend 
@@ -113,7 +135,7 @@ const NodeRow: React.FC<{ ticker: string; name: string; trend: number[]; onClick
 const SourceLink: React.FC<{ sources: GroundingSource[] }> = ({ sources }) => {
   if (!sources?.length) return null;
   return (
-    <div className="mt-8 pt-6 border-t border-white/5">
+    <div className="mt-8 pt-6 border-t border-white/5 text-left">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Audit Intelligence Path</span>
       </div>
@@ -171,6 +193,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('architect');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Inputs
   const [recInputs, setRecInputs] = useState({ amount: '50000', market: 'S&P 500', horizon: 'Medium Term', halal: true });
@@ -187,34 +210,49 @@ export default function App() {
     if (activeTab === 'pulse' && pulseItems.length === 0) handleFetchPulse();
   }, [activeTab]);
 
+  const handleError = (e: any) => {
+    const errorMsg = e?.message || String(e);
+    setApiError(errorMsg);
+    setLoading(false);
+  };
+
   const handleFetchPulse = async () => {
     setLoading(true);
-    try { setPulseItems(await getLogicPulse()); } catch (e) { console.error(e); } finally { setLoading(false); }
+    setApiError(null);
+    try { setPulseItems(await getLogicPulse()); } catch (e) { handleError(e); } finally { setLoading(false); }
   };
 
   const handleArchitect = async () => {
     setLoading(true);
-    try { setRecommendations(await getArchitectStrategy(recInputs.amount, recInputs.market, recInputs.horizon, recInputs.halal)); } catch (e) { console.error(e); } finally { setLoading(false); }
+    setApiError(null);
+    try { 
+      const res = await getArchitectStrategy(recInputs.amount, recInputs.market, recInputs.horizon, recInputs.halal);
+      setRecommendations(res);
+    } catch (e) { handleError(e); } finally { setLoading(false); }
   };
 
   const handleComparator = async () => {
     if (!compInputs.s1 || !compInputs.s2) return;
     setLoading(true);
-    try { setComparison(await getComparison(compInputs.s1, compInputs.s2, recInputs.market, recInputs.halal)); } catch (e) { console.error(e); } finally { setLoading(false); }
+    setApiError(null);
+    try { 
+      const res = await getComparison(compInputs.s1, compInputs.s2, recInputs.market, recInputs.halal);
+      setComparison(res);
+    } catch (e) { handleError(e); } finally { setLoading(false); }
   };
 
   const handlePathfinder = async (tickerOverride?: string) => {
     const ticker = tickerOverride || anaInput;
     if (!ticker) return;
     setLoading(true);
+    setApiError(null);
     try {
       const result = await getAnalysis(ticker, recInputs.market, recInputs.horizon, recInputs.halal);
       setAnalysis(result);
       if (tickerOverride) setAnaInput(tickerOverride);
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+    } catch (e) { handleError(e); } finally { setLoading(false); }
   };
 
-  // Improved market suggestion logic
   const handleMarketInputChange = (val: string) => {
     let market = val;
     if (val.toLowerCase() === 'pakistan' || val.toLowerCase() === 'pak') {
@@ -244,7 +282,7 @@ export default function App() {
             ].map((tab) => (
               <button 
                 key={tab.id} 
-                onClick={() => { setActiveTab(tab.id as TabType); setIsSidebarOpen(false); }} 
+                onClick={() => { setActiveTab(tab.id as TabType); setIsSidebarOpen(false); setApiError(null); }} 
                 className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl transition-all group relative overflow-hidden ${activeTab === tab.id ? 'bg-zinc-900/60 text-white border border-white/10' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/20'}`}
               >
                 {activeTab === tab.id && <div className="absolute left-0 h-6 w-1 bg-emerald-500 rounded-full" />}
@@ -268,21 +306,21 @@ export default function App() {
         
         <div className="p-8 border-t border-white/5 bg-zinc-950/20">
           <div className="mb-8 opacity-40 hover:opacity-100 transition-opacity group/team">
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-3">Architect Team</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-3 text-left">Architect Team</p>
             <div className="space-y-2 font-mono text-[10px] text-zinc-500 text-left">
-              <div className="flex items-center gap-2 group-hover/team:text-zinc-300 transition-colors justify-start">
+              <div className="flex items-center gap-2 group-hover/team:text-zinc-300 transition-colors">
                 <div className="w-1 h-1 bg-emerald-500/50 rounded-full" /> Abdullah Rashid
               </div>
-              <div className="flex items-center gap-2 group-hover/team:text-zinc-300 transition-colors justify-start">
+              <div className="flex items-center gap-2 group-hover/team:text-zinc-300 transition-colors">
                 <div className="w-1 h-1 bg-emerald-500/50 rounded-full" /> Moawiz
               </div>
-              <div className="flex items-center gap-2 group-hover/team:text-zinc-300 transition-colors justify-start">
+              <div className="flex items-center gap-2 group-hover/team:text-zinc-300 transition-colors">
                 <div className="w-1 h-1 bg-emerald-500/50 rounded-full" /> Muhammad Abdullah
               </div>
             </div>
           </div>
 
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-2">Network Status</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-2 text-left">Network Status</p>
           <div className="flex items-center gap-3 text-emerald-500/80 font-mono text-[10px]">
             <ShieldCheck size={14} className="animate-pulse" />
             <span>FLASH_SYNC: ACTIVE</span>
@@ -308,7 +346,8 @@ export default function App() {
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.5fr] gap-8 md:gap-12 animate-in fade-in slide-in-from-bottom-6">
               <div className="glass-card p-8 md:p-10 relative h-fit">
                 {loading && <CardLoader label="Synthesizing Node Set..." />}
-                <h2 className="title-fluid leading-none mb-10">ARCHITECT</h2>
+                {apiError && <ErrorOverlay message={apiError} onRetry={handleArchitect} onDismiss={() => setApiError(null)} />}
+                <h2 className="title-fluid leading-none mb-10 text-left">ARCHITECT</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-10">
                   <div className="space-y-2 text-left"><label className="field-label ml-1">Capital Pool (USD)</label><input type="number" className="field-input" value={recInputs.amount} onChange={(e) => setRecInputs({ ...recInputs, amount: e.target.value })} /></div>
                   <div className="space-y-2 text-left"><label className="field-label ml-1">Market Search</label><input type="text" className="field-input" placeholder="e.g. Pakistan, Germany, US Tech" value={recInputs.market} onChange={(e) => handleMarketInputChange(e.target.value)} /></div>
@@ -360,6 +399,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in duration-700">
               <div className="glass-card flex flex-col md:flex-row items-center gap-6 p-8 bg-zinc-950 border-emerald-500/10 relative group overflow-hidden">
                 {loading && <CardLoader label="Executing Deep Scan..." />}
+                {apiError && <ErrorOverlay message={apiError} onRetry={() => handlePathfinder()} onDismiss={() => setApiError(null)} />}
                 <Search className="text-zinc-800 group-hover:text-emerald-500/50 transition-colors shrink-0" size={40} />
                 <input 
                   placeholder="SEARCH TICKER OR COUNTRY..." 
@@ -485,10 +525,10 @@ export default function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 pb-20 opacity-40">
                   <div className="h-[500px] glass-card flex flex-col items-center justify-center opacity-10 border-dashed border-zinc-800">
                     <Target size={100} className="mb-6" />
-                    <p className="title-fluid">WAITING</p>
+                    <p className="title-fluid text-center">WAITING</p>
                   </div>
-                  <div className="glass-card p-10 bg-zinc-950/20 border-white/5 flex flex-col gap-8">
-                    <h3 className="text-[11px] font-black uppercase text-zinc-500 tracking-[0.4em] ml-1 flex items-center gap-2 text-left">
+                  <div className="glass-card p-10 bg-zinc-950/20 border-white/5 flex flex-col gap-8 text-left">
+                    <h3 className="text-[11px] font-black uppercase text-zinc-500 tracking-[0.4em] ml-1 flex items-center gap-2">
                        <Zap size={14} className="text-blue-500" /> Market Catalysts Preview
                     </h3>
                     <div className="space-y-4">
@@ -497,7 +537,7 @@ export default function App() {
                         { title: "Quarterly Earnings Expansion Protocol", impact: "medium" },
                         { title: "Geopolitical Supply Chain Realignment", impact: "high" }
                       ].map((item, i) => (
-                        <div key={i} className="flex flex-col p-6 bg-black/50 border border-white/5 rounded-3xl text-left">
+                        <div key={i} className="flex flex-col p-6 bg-black/50 border border-white/5 rounded-3xl">
                            <div className="flex items-center justify-between mb-3">
                              <div className="badge text-zinc-500 border-zinc-500/20 bg-zinc-500/5 px-3 py-1 rounded-full text-[8px]">
                                 {item.impact.toUpperCase()} IMPACT
@@ -524,6 +564,7 @@ export default function App() {
               
               <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 md:gap-8 items-center relative text-left">
                 {loading && <CardLoader label="Executing Logical Resolution..." />}
+                {apiError && <ErrorOverlay message={apiError} onRetry={handleComparator} onDismiss={() => setApiError(null)} />}
                 <div className="glass-card p-8 md:p-12 bg-blue-500/5 border-blue-500/20">
                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-6">ALPHA_NODE</span>
                    <input className="w-full bg-transparent border-b border-zinc-800 py-6 text-center text-3xl md:text-6xl font-black italic uppercase text-white outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-900" placeholder="TICKER A" value={compInputs.s1} onChange={(e) => setCompInputs({ ...compInputs, s1: e.target.value.toUpperCase() })} />
@@ -554,7 +595,7 @@ export default function App() {
                     <div className="space-y-10">
                       {comparison.scorecard.map((s, i) => (
                         <div key={i} className="space-y-4 group">
-                          <div className="flex justify-between items-end px-1 gap-4 text-left">
+                          <div className="flex justify-between items-end px-1 gap-4">
                             <div className="flex flex-col min-w-0"><span className="text-[9px] font-black text-blue-500 uppercase mb-1 truncate">{compInputs.s1}</span><span className="text-sm font-black italic text-zinc-100 truncate">{s.s1Value}</span></div>
                             <span className="text-[11px] font-black text-zinc-600 uppercase tracking-widest pb-1 text-center shrink-0">{s.label}</span>
                             <div className="flex flex-col text-right min-w-0"><span className="text-[9px] font-black text-rose-500 uppercase mb-1 truncate">{compInputs.s2}</span><span className="text-sm font-black italic text-zinc-100 truncate">{s.s2Value}</span></div>
@@ -567,7 +608,7 @@ export default function App() {
                         </div>
                       ))}
                     </div>
-                    <p className="mt-14 p-8 bg-black/80 rounded-[2.5rem] border border-white/5 text-lg text-zinc-300 italic leading-relaxed text-left">"{comparison.summary}"</p>
+                    <p className="mt-14 p-8 bg-black/80 rounded-[2.5rem] border border-white/5 text-lg text-zinc-300 italic leading-relaxed">"{comparison.summary}"</p>
                     <SourceLink sources={comparison.sources || []} />
                   </div>
                 </div>
@@ -578,15 +619,17 @@ export default function App() {
           {/* PULSE TAB */}
           {activeTab === 'pulse' && (
             <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700">
-               <div className="flex justify-between items-end mb-12">
-                  <div className="space-y-4 text-left">
+               <div className="flex justify-between items-end mb-12 text-left">
+                  <div className="space-y-4">
                      <h2 className="title-fluid">LOGIC PULSE</h2>
                      <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">Global Node Shift Stream</p>
                   </div>
                   <button onClick={handleFetchPulse} className="w-16 h-16 glass-card items-center justify-center text-emerald-500 hover:text-emerald-400 active:scale-95 transition-all"><RefreshCw size={24} className={loading ? 'animate-spin' : ''} /></button>
                </div>
                
-               <div className="space-y-4">
+               <div className="space-y-4 relative">
+                  {loading && <CardLoader label="Updating Logic Streams..." />}
+                  {apiError && <ErrorOverlay message={apiError} onRetry={handleFetchPulse} onDismiss={() => setApiError(null)} />}
                   {pulseItems.map((item, i) => (
                     <div key={i} className="group glass-card flex-row items-center justify-between p-8 hover:bg-zinc-900/40 transition-all border-l-4 border-l-zinc-900 hover:border-l-emerald-500 cursor-pointer text-left">
                       <div className="flex items-center gap-10 min-w-0">
