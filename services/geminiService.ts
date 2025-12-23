@@ -1,12 +1,27 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { RecommendationResponse, ComparisonResponse, AnalysisResponse, GroundingSource } from "../types";
 
-// Helper to get the key and warn if it looks like a build-time failure
+// Helper to get the key and sanitize it
 const getApiKey = () => {
-  const key = process.env.API_KEY;
-  if (!key || key === "undefined" || key === "null" || key.length < 10) {
-    throw new Error("BUILD_ERROR: API_KEY was missing during Vercel build. REDEPLOY REQUIRED.");
+  let key = process.env.API_KEY;
+  
+  // Handle stringified 'undefined' or 'null' from build injection
+  if (!key || key === "undefined" || key === "null") {
+    throw new Error("BUILD_ERROR: API_KEY is undefined. You must set it in Vercel/System Env and REDEPLOY.");
   }
+
+  // Sanitize: Remove quotes and whitespace that users often accidentally paste
+  key = key.trim().replace(/^["'](.+)["']$/, '$1');
+
+  if (key.length < 20) {
+    throw new Error(`INVALID_KEY: The provided API_KEY is too short (${key.length} chars). Check your Vercel settings.`);
+  }
+
+  if (!key.startsWith("AIza")) {
+    throw new Error("INVALID_KEY: Key must start with 'AIza'. Check your Gemini API key.");
+  }
+
   return key;
 };
 
@@ -163,7 +178,8 @@ export const getAnalysis = async (ticker: string, market: string, horizon: strin
   return { ...JSON.parse(response.text || "{}"), sources: extractSources(response) };
 };
 
-export const getLogicPulse = async (): Promise<any[]> => {
+// Fix: Extract grounding sources for the Pulse logic as required by the guidelines
+export const getLogicPulse = async (): Promise<{ items: any[]; sources: GroundingSource[] }> => {
   const ai = getClient();
   const response = await ai.models.generateContent({
     model: MODEL_NAME,
@@ -187,5 +203,8 @@ export const getLogicPulse = async (): Promise<any[]> => {
     }
   });
 
-  return JSON.parse(response.text || "[]");
+  return {
+    items: JSON.parse(response.text || "[]"),
+    sources: extractSources(response)
+  };
 };

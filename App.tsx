@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Scale, Target, Radio, Menu, X, ArrowRight,
@@ -57,7 +58,7 @@ const CardLoader: React.FC<{ label?: string }> = ({ label = "Synthesizing Data..
 
 const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: () => void }> = ({ message, onRetry, onDismiss }) => {
   const isQuota = message.includes('429');
-  const isKeyError = message.includes('403') || message.includes('400') || message.includes('API_KEY_INVALID') || message.includes('BUILD_ERROR');
+  const isKeyError = message.includes('403') || message.includes('400') || message.includes('API_KEY_INVALID') || message.includes('BUILD_ERROR') || message.includes('INVALID_KEY');
   
   return (
     <div className="absolute inset-0 bg-black/98 backdrop-blur-2xl z-[70] flex flex-col items-center justify-center p-12 text-center animate-in zoom-in-95">
@@ -69,19 +70,21 @@ const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: 
         {isQuota 
           ? "Your Gemini API key has exceeded its current quota. Please wait a few minutes or upgrade your plan." 
           : isKeyError
-          ? "CRITICAL: API Identity Mismatch. You MUST update 'API_KEY' in Vercel and TRIGGER A NEW DEPLOYMENT (Redeploy) for changes to take effect."
+          ? "CRITICAL: API Identity Mismatch. Ensure you didn't include quotes around the key in Vercel. You MUST TRIGGER A NEW DEPLOYMENT (Redeploy) for the key to be injected."
           : `An unexpected disruption occurred: ${message.slice(0, 100)}...`}
       </p>
       <div className="bg-zinc-900/50 p-4 rounded-xl border border-white/5 mb-10 overflow-hidden max-w-md">
-        <p className="text-[9px] font-mono text-emerald-500 mb-1 font-bold uppercase tracking-widest">Action Required:</p>
-        <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">
-          {"Vercel -> Project -> Settings -> Environment Variables -> Edit 'API_KEY' -> Save -> Go to Deployments -> Redeploy"}
-        </p>
+        <p className="text-[9px] font-mono text-emerald-500 mb-2 font-bold uppercase tracking-widest">Mandatory Steps:</p>
+        <div className="space-y-2 text-left">
+           <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">1. Vercel &rarr; Settings &rarr; Env Vars: Delete and Re-add 'API_KEY' (No quotes!)</p>
+           <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">2. Deployments &rarr; Click current deployment &rarr; Redeploy &rarr; Redeploy (Force Build)</p>
+        </div>
       </div>
       <div className="flex gap-4 w-full max-w-xs">
         <button onClick={onRetry} className="flex-1 py-4 bg-white text-black font-black uppercase text-[11px] tracking-widest rounded-xl hover:bg-zinc-200 transition-all">Retry Link</button>
         <button onClick={onDismiss} className="flex-1 py-4 border border-zinc-800 text-zinc-500 font-black uppercase text-[11px] tracking-widest rounded-xl hover:border-zinc-400 transition-all">Dismiss</button>
       </div>
+      <div className="mt-6 text-[8px] font-mono text-zinc-700 uppercase">System Log: {message.slice(0, 60)}...</div>
     </div>
   );
 };
@@ -213,6 +216,7 @@ export default function App() {
   const [comparison, setComparison] = useState<ComparisonResponse | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [pulseItems, setPulseItems] = useState<any[]>([]);
+  const [pulseSources, setPulseSources] = useState<GroundingSource[]>([]);
 
   useEffect(() => {
     if (activeTab === 'pulse' && pulseItems.length === 0) handleFetchPulse();
@@ -229,7 +233,12 @@ export default function App() {
   const handleFetchPulse = async () => {
     setLoading(true);
     setApiError(null);
-    try { setPulseItems(await getLogicPulse()); } catch (e) { handleError(e); } finally { setLoading(false); }
+    try { 
+      // Fix: destructure items and sources from updated getLogicPulse response
+      const { items, sources } = await getLogicPulse(); 
+      setPulseItems(items);
+      setPulseSources(sources);
+    } catch (e) { handleError(e); } finally { setLoading(false); }
   };
 
   const handleArchitect = async () => {
@@ -659,6 +668,8 @@ export default function App() {
                       <ArrowRight size={24} className="text-zinc-900 group-hover:text-emerald-500 group-hover:translate-x-3 transition-all shrink-0 ml-4" />
                     </div>
                   ))}
+                  {/* Fix: Render extracted grounding sources for the Pulse tab */}
+                  <SourceLink sources={pulseSources} />
                </div>
             </div>
           )}
