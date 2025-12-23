@@ -5,13 +5,14 @@ import {
   Layers, RefreshCw, Trophy, Search, Network, TrendingUp,
   ShieldCheck, Clock, Globe, BarChart3, Activity, ExternalLink, Info,
   TrendingDown, Zap, Shield, Flame, ChevronRight, AlertCircle, CheckCircle2,
-  Gauge, TrendingUp as BullIcon, TrendingDown as BearIcon, OctagonAlert
+  Gauge, TrendingUp as BullIcon, TrendingDown as BearIcon, OctagonAlert,
+  Cpu
 } from 'lucide-react';
 import { 
   TabType, RecommendationResponse, ComparisonResponse, AnalysisResponse, GroundingSource 
 } from './types';
 import { 
-  getArchitectStrategy, getComparison, getAnalysis, getLogicPulse, getApiKeyHint 
+  getArchitectStrategy, getComparison, getAnalysis, getLogicPulse, getApiKeyHint, getEngineStatus 
 } from './services/geminiService';
 
 // --- Shared Components ---
@@ -52,13 +53,13 @@ const CardLoader: React.FC<{ label?: string }> = ({ label = "Synthesizing Data..
       <RefreshCw className="text-emerald-500 animate-spin absolute inset-0 m-auto" size={24} />
     </div>
     <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-2 animate-pulse">{label}</span>
-    <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest max-w-xs leading-relaxed">Cross-referencing global indices via real-time search grounding protocol...</span>
+    <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest max-w-xs leading-relaxed">Cross-referencing global indices via real-time architecture protocols...</span>
   </div>
 );
 
 const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: () => void }> = ({ message, onRetry, onDismiss }) => {
   const isQuota = message.includes('429');
-  const isKeyError = message.includes('403') || message.includes('400') || message.includes('API_KEY_INVALID') || message.includes('BUILD_ERROR') || message.includes('INVALID_KEY');
+  const isKeyError = message.includes('403') || message.includes('400') || message.includes('INVALID') || message.includes('GROQ_ERROR') || message.includes('API_KEY_INVALID');
   const keyHint = getApiKeyHint();
   
   return (
@@ -69,12 +70,12 @@ const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: 
       <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter mb-4">Logic Pipeline Exhausted</h3>
       
       <div className="bg-zinc-900/50 p-4 rounded-xl border border-white/5 mb-6 overflow-hidden w-full max-w-md">
-        <p className="text-[10px] font-mono text-rose-500 mb-2 font-bold uppercase tracking-widest text-left">Detected Error:</p>
+        <p className="text-[10px] font-mono text-rose-500 mb-2 font-bold uppercase tracking-widest text-left">Detected Provider Error:</p>
         <p className="text-[11px] text-zinc-400 font-medium text-left leading-relaxed">
           {isQuota 
-            ? "Your Gemini API key has exceeded its quota. Use a different project or wait." 
+            ? "Your AI quota has been exceeded. Please check your provider dashboard (Google AI Studio or Groq Cloud)." 
             : isKeyError
-            ? "API Key rejected by Google. Ensure you didn't include spaces or quotes in Vercel. A manual 'Redeploy' is mandatory after saving."
+            ? "The API Key was rejected. Ensure you are using a valid Gemini key (AIza...) or Groq key (gsk_). Redploy mandatory after saving."
             : `System Disruption: ${message.slice(0, 150)}`}
         </p>
       </div>
@@ -86,8 +87,8 @@ const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: 
              <span className="text-[10px] text-zinc-500">Active Key Hint:</span>
              <span className="text-[10px] font-mono text-white bg-zinc-800 px-2 py-0.5 rounded">{keyHint}</span>
            </div>
-           <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">1. Vercel &rarr; Settings &rarr; Env Vars: Update 'API_KEY' (No quotes!)</p>
-           <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">2. Deployments &rarr; Redeploy &rarr; Redeploy (Force Build)</p>
+           <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">1. Vercel &rarr; Settings &rarr; Env Vars: Update 'API_KEY'</p>
+           <p className="text-[10px] font-mono text-zinc-400 break-words uppercase">2. Deployments &rarr; Redeploy (Force Build)</p>
         </div>
       </div>
 
@@ -215,6 +216,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const engine = getEngineStatus();
 
   // Inputs
   const [recInputs, setRecInputs] = useState({ amount: '50000', market: 'S&P 500', horizon: 'Medium Term', halal: true });
@@ -233,8 +235,7 @@ export default function App() {
   }, [activeTab]);
 
   const handleError = (e: any) => {
-    // Log full error for developer debugging in console
-    console.error("FULL API ERROR OBJECT:", e);
+    console.error("FULL AI ERROR:", e);
     const errorMsg = e?.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
     setApiError(errorMsg);
     setLoading(false);
@@ -333,6 +334,14 @@ export default function App() {
         </div>
         
         <div className="p-8 border-t border-white/5 bg-zinc-950/20">
+          <div className="mb-6">
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-3 text-left">Active Provider</p>
+            <div className="flex items-center gap-3 p-3 bg-black border border-white/5 rounded-xl">
+               <Cpu size={14} className={engine !== 'DISCONNECTED' ? 'text-emerald-500' : 'text-rose-500'} />
+               <span className="text-[10px] font-mono text-zinc-300 font-bold tracking-tighter">{engine}</span>
+            </div>
+          </div>
+
           <div className="mb-8 opacity-40 hover:opacity-100 transition-opacity group/team">
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-3 text-left">Architect Team</p>
             <div className="space-y-2 font-mono text-[10px] text-zinc-500 text-left">
@@ -346,12 +355,6 @@ export default function App() {
                 <div className="w-1 h-1 bg-emerald-500/50 rounded-full" /> Muhammad Abdullah
               </div>
             </div>
-          </div>
-
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-2 text-left">Network Status</p>
-          <div className="flex items-center gap-3 text-emerald-500/80 font-mono text-[10px]">
-            <ShieldCheck size={14} className="animate-pulse" />
-            <span>FLASH_SYNC: ACTIVE</span>
           </div>
         </div>
         <button className="absolute top-8 right-8 text-zinc-600 lg:hidden" onClick={() => setIsSidebarOpen(false)}><X size={24} /></button>
@@ -372,15 +375,21 @@ export default function App() {
           {/* ARCHITECT TAB */}
           {activeTab === 'architect' && (
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.5fr] gap-8 md:gap-12 animate-in fade-in slide-in-from-bottom-6">
-              <div className="glass-card p-8 md:p-10 relative h-fit">
+              <div className="glass-card p-8 md:p-10 relative h-fit text-left">
                 {loading && <CardLoader label="Synthesizing Node Set..." />}
                 {apiError && <ErrorOverlay message={apiError} onRetry={handleArchitect} onDismiss={() => setApiError(null)} />}
-                <h2 className="title-fluid leading-none mb-10 text-left">ARCHITECT</h2>
+                <div className="flex justify-between items-start mb-10">
+                  <h2 className="title-fluid leading-none">ARCHITECT</h2>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-white/5 rounded-full">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[8px] font-black uppercase text-zinc-500 tracking-widest">{engine} READY</span>
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-10">
-                  <div className="space-y-2 text-left"><label className="field-label ml-1">Capital Pool (USD)</label><input type="number" className="field-input" value={recInputs.amount} onChange={(e) => setRecInputs({ ...recInputs, amount: e.target.value })} /></div>
-                  <div className="space-y-2 text-left"><label className="field-label ml-1">Market Search</label><input type="text" className="field-input" placeholder="e.g. Pakistan, Germany, US Tech" value={recInputs.market} onChange={(e) => handleMarketInputChange(e.target.value)} /></div>
-                  <div className="space-y-2 text-left"><label className="field-label ml-1">Time Horizon</label><select className="field-input" value={recInputs.horizon} onChange={(e) => setRecInputs({ ...recInputs, horizon: e.target.value })}><option>Short Term</option><option>Medium Term</option><option>Long Term</option></select></div>
-                  <div className="flex flex-col justify-center gap-1 p-4 bg-zinc-950/50 border border-zinc-800 rounded-xl cursor-pointer group transition-all text-left" onClick={() => setRecInputs({ ...recInputs, halal: !recInputs.halal })}>
+                  <div className="space-y-2"><label className="field-label ml-1 text-zinc-500 text-[10px] font-black uppercase tracking-widest">Capital Pool (USD)</label><input type="number" className="field-input" value={recInputs.amount} onChange={(e) => setRecInputs({ ...recInputs, amount: e.target.value })} /></div>
+                  <div className="space-y-2"><label className="field-label ml-1 text-zinc-500 text-[10px] font-black uppercase tracking-widest">Market Search</label><input type="text" className="field-input" placeholder="e.g. US Tech, PSX, FTSE" value={recInputs.market} onChange={(e) => handleMarketInputChange(e.target.value)} /></div>
+                  <div className="space-y-2"><label className="field-label ml-1 text-zinc-500 text-[10px] font-black uppercase tracking-widest">Time Horizon</label><select className="field-input" value={recInputs.horizon} onChange={(e) => setRecInputs({ ...recInputs, horizon: e.target.value })}><option>Short Term</option><option>Medium Term</option><option>Long Term</option></select></div>
+                  <div className="flex flex-col justify-center gap-1 p-4 bg-zinc-950/50 border border-zinc-800 rounded-xl cursor-pointer group transition-all" onClick={() => setRecInputs({ ...recInputs, halal: !recInputs.halal })}>
                     <label className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Ethical Logic</label>
                     <div className="flex items-center justify-between">
                       <span className={`text-xs font-bold ${recInputs.halal ? 'text-emerald-500' : 'text-zinc-700'}`}>Sharia Filter</span>
@@ -430,7 +439,7 @@ export default function App() {
                 {apiError && <ErrorOverlay message={apiError} onRetry={() => handlePathfinder()} onDismiss={() => setApiError(null)} />}
                 <Search className="text-zinc-800 group-hover:text-emerald-500/50 transition-colors shrink-0" size={40} />
                 <input 
-                  placeholder="SEARCH TICKER OR COUNTRY..." 
+                  placeholder="SEARCH TICKER..." 
                   className="flex-1 bg-transparent text-3xl md:text-6xl font-black italic uppercase outline-none placeholder:text-zinc-900 text-white tracking-tighter" 
                   value={anaInput} 
                   onChange={(e) => setAnaInput(e.target.value.toUpperCase())}
@@ -448,7 +457,7 @@ export default function App() {
                       <div className="min-w-0 flex flex-col justify-center">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-6 w-fit">
                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                           <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Logic Stream: Active</span>
+                           <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{engine} ACTIVE</span>
                         </div>
                         <h2 className="font-black italic uppercase leading-[0.85] tracking-tighter text-white mb-4 break-words" style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)' }}>{analysis.ticker}</h2>
                         <p className="text-xl md:text-3xl text-zinc-500 font-bold uppercase tracking-[0.2em] break-words leading-tight">{analysis.name}</p>
@@ -553,7 +562,7 @@ export default function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 pb-20 opacity-40">
                   <div className="h-[500px] glass-card flex flex-col items-center justify-center opacity-10 border-dashed border-zinc-800">
                     <Target size={100} className="mb-6" />
-                    <p className="title-fluid text-center">WAITING</p>
+                    <p className="title-fluid text-center">AWAITING SCAN</p>
                   </div>
                   <div className="glass-card p-10 bg-zinc-950/20 border-white/5 flex flex-col gap-8 text-left">
                     <h3 className="text-[11px] font-black uppercase text-zinc-500 tracking-[0.4em] ml-1 flex items-center gap-2">
@@ -561,9 +570,9 @@ export default function App() {
                     </h3>
                     <div className="space-y-4">
                       {[
-                        { title: "Federal Reserve Interest Rate Decision", impact: "high" },
-                        { title: "Quarterly Earnings Expansion Protocol", impact: "medium" },
-                        { title: "Geopolitical Supply Chain Realignment", impact: "high" }
+                        { title: "Federal Reserve Decision Impact", impact: "high" },
+                        { title: "Earnings Cycle Expansion", impact: "medium" },
+                        { title: "Geopolitical Re-alignment", impact: "high" }
                       ].map((item, i) => (
                         <div key={i} className="flex flex-col p-6 bg-black/50 border border-white/5 rounded-3xl">
                            <div className="flex items-center justify-between mb-3">
@@ -587,7 +596,7 @@ export default function App() {
             <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-1000">
               <div className="text-center">
                  <h2 className="title-fluid mb-4">DUEL DUO</h2>
-                 <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">Binary Comparative Analytics Resolution</p>
+                 <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">Comparative Analysis Resolution ({engine})</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 md:gap-8 items-center relative text-left">
@@ -650,7 +659,7 @@ export default function App() {
                <div className="flex justify-between items-end mb-12 text-left">
                   <div className="space-y-4">
                      <h2 className="title-fluid">LOGIC PULSE</h2>
-                     <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">Global Node Shift Stream</p>
+                     <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">Global Node Stream ({engine})</p>
                   </div>
                   <button onClick={handleFetchPulse} className="w-16 h-16 glass-card items-center justify-center text-emerald-500 hover:text-emerald-400 active:scale-95 transition-all"><RefreshCw size={24} className={loading ? 'animate-spin' : ''} /></button>
                </div>
@@ -670,7 +679,7 @@ export default function App() {
                           <div className="flex items-center gap-3">
                              <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{item.sector}</span>
                              <div className="w-1 h-1 rounded-full bg-zinc-800" />
-                             <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">G_INTEL_STREAM</span>
+                             <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">{engine}_SYNAPSE</span>
                           </div>
                         </div>
                       </div>
