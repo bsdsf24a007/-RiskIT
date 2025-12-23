@@ -26,7 +26,7 @@ export const getApiKeyHint = () => {
  * Robust JSON parsing for Gemini responses.
  * Grounding tools often inject citations like [1] or markdown blocks which break standard JSON.parse.
  */
-const safeJsonParse = (text: string) => {
+const safeJsonParse = (text: string | undefined) => {
   if (!text) return null;
   try {
     // Remove markdown code blocks if present
