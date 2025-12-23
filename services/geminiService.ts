@@ -70,8 +70,12 @@ const extractSources = (response: any): GroundingSource[] => {
 
 export const getArchitectStrategy = async (amount: string, market: string, horizon: string, halal: boolean): Promise<RecommendationResponse> => {
   const key = getApiKey();
-  const systemInstruction = `You are a Quantitative Architect. MANDATE: You MUST provide exactly 10 high-conviction stock nodes. MARKET RESOLUTION: Resolve market name to main exchange. DATA FIDELITY: trend array must be 7 variant integers. Halal: strictly exclude non-halal. Return JSON structure: { "strategy": "string", "nodes": [{"ticker": "string", "name": "string", "trend": [int]}] }`;
-  const prompt = `Architect a portfolio for $${amount} in the ${market} ecosystem. Horizon: ${horizon}. Halal: ${halal}. Suggest the top 10 stocks.`;
+  const systemInstruction = `You are a Quantitative Architect. 
+  MANDATE: Provide exactly 10 high-conviction stock nodes. 
+  VISUAL DATA: The 'trend' array MUST represent realistic market volatility with significant numeric variation (no flat lines). 
+  Return JSON: { "strategy": "string", "nodes": [{"ticker": "string", "name": "string", "trend": [int]}] }`;
+  
+  const prompt = `Architect a portfolio for $${amount} in the ${market} ecosystem. Horizon: ${horizon}. Halal: ${halal}. Suggest the top 10 stocks. Ensure the trend data shows active price action.`;
 
   if (key.startsWith("gsk_")) {
     const text = await callGroq(prompt, systemInstruction);
@@ -114,8 +118,8 @@ export const getArchitectStrategy = async (amount: string, market: string, horiz
 
 export const getComparison = async (s1: string, s2: string, market: string, halal: boolean): Promise<ComparisonResponse> => {
   const key = getApiKey();
-  const systemInstruction = `Compare two financial nodes or indices. Return JSON structure: { "winner": "ticker", "decision": "string", "summary": "string", "scorecard": [{"label": "string", "s1Value": "string", "s2Value": "string", "s1Percent": number, "s2Percent": number}] }`;
-  const prompt = `Compare ${s1} vs ${s2} in context of ${market}. Halal filter: ${halal}.`;
+  const systemInstruction = `Compare two financial nodes. Use standard market benchmarks. Return JSON: { "winner": "ticker", "decision": "string", "summary": "string", "scorecard": [{"label": "string", "s1Value": "string", "s2Value": "string", "s1Percent": number, "s2Percent": number}] }`;
+  const prompt = `Institutional Duel: ${s1} vs ${s2} in ${market}. Halal filter: ${halal}.`;
 
   if (key.startsWith("gsk_")) {
     const text = await callGroq(prompt, systemInstruction);
@@ -160,8 +164,8 @@ export const getComparison = async (s1: string, s2: string, market: string, hala
 
 export const getAnalysis = async (ticker: string, market: string, horizon: string, halal: boolean): Promise<AnalysisResponse> => {
   const key = getApiKey();
-  const systemInstruction = `Deep Audit ticker/index. Return JSON structure: { "ticker": "string", "name": "string", "health": float, "desc": "string", "short": "string", "long": "string", "metrics": [{"label": "string", "value": "string", "status": "positive|negative|neutral"}], "sentiment": [{"label": "string", "score": int}], "catalysts": [{"title": "string", "impact": "high|medium|low"}] }`;
-  const prompt = `Deep Audit of ${ticker} in ${market}. Halal: ${halal}. Provide 6-8 comprehensive metrics.`;
+  const systemInstruction = `Audit ticker/index. Return JSON: { "ticker": "string", "name": "string", "health": float, "desc": "string", "short": "string", "long": "string", "metrics": [{"label": "string", "value": "string", "status": "positive|negative|neutral"}], "sentiment": [{"label": "string", "score": int}], "catalysts": [{"title": "string", "impact": "high|medium|low"}] }`;
+  const prompt = `Deep Audit: ${ticker} in ${market}. Halal: ${halal}.`;
 
   if (key.startsWith("gsk_")) {
     const text = await callGroq(prompt, systemInstruction);
@@ -226,8 +230,8 @@ export const getAnalysis = async (ticker: string, market: string, horizon: strin
 
 export const getLogicPulse = async (): Promise<{ items: any[]; sources: GroundingSource[] }> => {
   const key = getApiKey();
-  const systemInstruction = `Fetch 5 real-time market news events. Return JSON array of objects: { "title": "string", "time": "string", "impact": "High|Medium", "sector": "string" }`;
-  const prompt = 'Latest high-impact financial events globally.';
+  const systemInstruction = `Fetch 5 real-time news events. Return JSON: [{ "title": "string", "time": "string", "impact": "High|Medium", "sector": "string" }]`;
+  const prompt = 'Institutional market intel feed.';
 
   if (key.startsWith("gsk_")) {
     const text = await callGroq(prompt, systemInstruction);
