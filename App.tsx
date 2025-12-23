@@ -6,7 +6,8 @@ import {
   ShieldCheck, Globe, BarChart3, Activity, ExternalLink,
   Zap, Shield, Flame, ChevronRight, AlertCircle,
   Gauge, TrendingUp as BullIcon, TrendingDown as BearIcon, OctagonAlert,
-  Cpu, Sword, Gem, Landmark, PieChart, Coins, Users, Layers, Trash2
+  Cpu, Sword, Gem, Landmark, PieChart, Coins, Users, Layers, Trash2,
+  Sun, Moon
 } from 'lucide-react';
 import { 
   TabType, RecommendationResponse, ComparisonResponse, AnalysisResponse, GroundingSource 
@@ -31,7 +32,6 @@ const QuantValue: React.FC<{ value: number; suffix?: string; prefix?: string; de
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      // Easing function: easeOutExpo
       const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
       const current = easedProgress * (value - startVal) + startVal;
       setDisplayValue(current);
@@ -59,12 +59,12 @@ const TickerTape: React.FC = () => {
   ];
 
   return (
-    <div className="h-8 bg-black/80 backdrop-blur-md border-b border-white/5 overflow-hidden flex items-center group sticky top-0 z-50 shrink-0">
+    <div className="h-8 bg-zinc-50/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/5 overflow-hidden flex items-center group sticky top-0 z-50 shrink-0">
       <div className="flex animate-marquee whitespace-nowrap group-hover:[animation-play-state:paused]">
         {[...items, ...items, ...items].map((item, i) => (
-          <div key={i} className="flex items-center gap-3 px-6 border-r border-white/5 h-8 shrink-0">
-            <span className="text-[9px] font-black italic text-zinc-500 tracking-tighter uppercase shrink-0">{item.s}</span>
-            <span className="text-[9px] font-mono text-zinc-200 shrink-0">{item.p}</span>
+          <div key={i} className="flex items-center gap-3 px-6 border-r border-zinc-200 dark:border-white/5 h-8 shrink-0">
+            <span className="text-[9px] font-black italic text-zinc-400 dark:text-zinc-500 tracking-tighter uppercase shrink-0">{item.s}</span>
+            <span className="text-[9px] font-mono text-zinc-600 dark:text-zinc-200 shrink-0">{item.p}</span>
             <span className={`text-[8px] font-bold shrink-0 ${item.u ? 'text-emerald-500' : 'text-rose-500'}`}>
               {item.u ? '▲' : '▼'} {item.c}
             </span>
@@ -76,7 +76,7 @@ const TickerTape: React.FC = () => {
 };
 
 const CardLoader: React.FC<{ label?: string }> = ({ label = "Synthesizing Data..." }) => (
-  <div className="absolute inset-0 bg-black/95 backdrop-blur-lg z-[60] flex flex-col items-center justify-center p-8 text-center animate-in fade-in">
+  <div className="absolute inset-0 bg-white/95 dark:bg-black/95 backdrop-blur-lg z-[60] flex flex-col items-center justify-center p-8 text-center animate-in fade-in">
     <div className="scan-line" />
     <div className="w-10 h-10 mb-4 relative">
       <div className="absolute inset-0 border-2 border-emerald-500/10 rounded-full" />
@@ -88,17 +88,17 @@ const CardLoader: React.FC<{ label?: string }> = ({ label = "Synthesizing Data..
 
 const ErrorOverlay: React.FC<{ message: string; onRetry: () => void; onDismiss: () => void }> = ({ message, onRetry, onDismiss }) => {
   return (
-    <div className="absolute inset-0 bg-black/98 backdrop-blur-2xl z-[70] flex flex-col items-center justify-center p-6 text-center animate-in zoom-in-95">
+    <div className="absolute inset-0 bg-white/98 dark:bg-black/98 backdrop-blur-2xl z-[70] flex flex-col items-center justify-center p-6 text-center animate-in zoom-in-95">
       <div className="w-12 h-12 mb-4 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
         <OctagonAlert className="text-rose-500 animate-pulse" size={24} />
       </div>
-      <h3 className="text-lg font-black italic text-white uppercase tracking-tighter mb-4">Pipeline Exhausted</h3>
-      <div className="bg-zinc-900/50 p-4 rounded-xl border border-white/5 mb-6 w-full max-w-sm overflow-hidden text-left">
-        <p className="text-[10px] text-zinc-400 font-medium leading-relaxed truncate">{message}</p>
+      <h3 className="text-lg font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter mb-4">Pipeline Exhausted</h3>
+      <div className="bg-zinc-100 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-200 dark:border-white/5 mb-6 w-full max-sm overflow-hidden text-left">
+        <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed truncate">{message}</p>
       </div>
       <div className="flex gap-4 w-full max-w-xs">
-        <button onClick={onRetry} className="flex-1 py-3 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-lg hover:bg-zinc-200 transition-all">Retry</button>
-        <button onClick={onDismiss} className="flex-1 py-3 border border-zinc-800 text-zinc-500 font-black uppercase text-[10px] tracking-widest rounded-lg hover:border-zinc-400 transition-all">Dismiss</button>
+        <button onClick={onRetry} className="flex-1 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase text-[10px] tracking-widest rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all">Retry</button>
+        <button onClick={onDismiss} className="flex-1 py-3 border border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 font-black uppercase text-[10px] tracking-widest rounded-lg hover:border-zinc-400 transition-all">Dismiss</button>
       </div>
     </div>
   );
@@ -127,16 +127,16 @@ const NodeRow: React.FC<{ ticker: string; name: string; trend: number[]; onClick
   return (
     <div 
       onClick={onClick}
-      className="group flex items-center justify-between p-3 bg-zinc-950/40 border border-white/5 rounded-xl hover:border-emerald-500/40 hover:bg-zinc-900/40 transition-all duration-300 cursor-pointer gap-3 overflow-hidden shadow-md relative"
+      className="group flex items-center justify-between p-3 bg-white/50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-white/5 rounded-xl hover:border-emerald-500/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-all duration-300 cursor-pointer gap-3 overflow-hidden shadow-sm hover:shadow-md relative"
     >
       <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="flex items-center gap-3 min-w-0 flex-1 text-left relative z-10">
-        <div className="w-8 h-8 rounded-lg bg-black border border-white/10 flex items-center justify-center font-black italic text-zinc-600 group-hover:text-emerald-500 group-hover:scale-105 transition-all text-[8px] shrink-0 uppercase tracking-tighter">
+        <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 flex items-center justify-center font-black italic text-zinc-400 dark:text-zinc-600 group-hover:text-emerald-500 group-hover:scale-105 transition-all text-[8px] shrink-0 uppercase tracking-tighter">
           {ticker.substring(0, 4)}
         </div>
         <div className="min-w-0">
-          <h4 className="font-black italic text-xs text-zinc-200 group-hover:text-white transition-colors truncate uppercase leading-tight">{ticker}</h4>
-          <p className="text-[7px] text-zinc-600 font-bold uppercase tracking-[0.1em] truncate">{name}</p>
+          <h4 className="font-black italic text-xs text-zinc-700 dark:text-zinc-200 group-hover:text-black dark:group-hover:text-white transition-colors truncate uppercase leading-tight">{ticker}</h4>
+          <p className="text-[7px] text-zinc-400 dark:text-zinc-600 font-bold uppercase tracking-[0.1em] truncate">{name}</p>
         </div>
       </div>
       <div className="w-12 h-6 shrink-0 relative z-10 overflow-visible">
@@ -163,10 +163,10 @@ const NodeRow: React.FC<{ ticker: string; name: string; trend: number[]; onClick
 
 const RiskWidget: React.FC = () => {
   return (
-    <div className="p-4 bg-zinc-900/20 rounded-xl border border-white/5 space-y-3 group overflow-hidden relative">
-      <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform"><Flame size={40} /></div>
+    <div className="p-4 bg-zinc-100 dark:bg-zinc-900/20 rounded-xl border border-zinc-200 dark:border-white/5 space-y-3 group overflow-hidden relative">
+      <div className="absolute top-0 right-0 p-4 opacity-[0.05] dark:opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform"><Flame size={40} className="text-zinc-300 dark:text-zinc-700" /></div>
       <div className="flex justify-between items-center mb-1">
-        <span className="text-[8px] font-black uppercase text-zinc-600 tracking-[0.2em]">Risk Status</span>
+        <span className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-[0.2em]">Risk Status</span>
         <Flame size={10} className="text-orange-500 animate-pulse" />
       </div>
       <div className="flex gap-1 h-1.5">
@@ -174,9 +174,9 @@ const RiskWidget: React.FC = () => {
         <div className="flex-1 bg-yellow-500 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.3)]" />
         <div className="flex-1 bg-rose-500 rounded-full opacity-10 animate-flicker" />
       </div>
-      <div className="flex justify-between text-[7px] font-mono text-zinc-600">
+      <div className="flex justify-between text-[7px] font-mono text-zinc-400 dark:text-zinc-600">
         <span>VIX_INDEX: 18.2</span>
-        <span className="text-yellow-500/80 uppercase font-bold tracking-tighter">NEUTRAL_MARKET</span>
+        <span className="text-yellow-600 dark:text-yellow-500/80 uppercase font-bold tracking-tighter">NEUTRAL_MARKET</span>
       </div>
     </div>
   );
@@ -190,15 +190,15 @@ const TeamCredits: React.FC = () => {
   ];
 
   return (
-    <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
+    <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-white/5 space-y-4">
       <div className="flex items-center gap-2 mb-2">
-        <Users size={12} className="text-zinc-700" />
-        <span className="text-[10px] font-black uppercase text-zinc-700 tracking-[0.3em]">Team</span>
+        <Users size={12} className="text-zinc-400 dark:text-zinc-700" />
+        <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-700 tracking-[0.3em]">Team</span>
       </div>
       <div className="space-y-1.5 px-1 text-left">
         {members.map((name, i) => (
           <div key={i} className="flex flex-col group/member">
-            <span className="text-[11px] font-bold text-zinc-500 group-hover/member:text-zinc-200 transition-colors truncate">{name}</span>
+            <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-500 group-hover/member:text-zinc-900 dark:group-hover/member:text-zinc-200 transition-colors truncate">{name}</span>
           </div>
         ))}
       </div>
@@ -213,6 +213,9 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('riskit-theme') as 'light' | 'dark') || 'dark';
+  });
   const engine = getEngineStatus();
 
   const [recInputs, setRecInputs] = useState({ amount: '50000', market: 'S&P 500', horizon: 'Medium Term', halal: true });
@@ -226,8 +229,19 @@ export default function App() {
   const [pulseSources, setPulseSources] = useState<GroundingSource[]>([]);
 
   useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('riskit-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
     if (activeTab === 'pulse' && pulseItems.length === 0) handleFetchPulse();
   }, [activeTab]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   const handleError = (e: any) => {
     setApiError(e?.message || "Communication protocol failure.");
@@ -275,13 +289,19 @@ export default function App() {
   const getNormalizedHealth = (h: number) => h > 1 ? h / 100 : h;
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden font-sans selection:bg-emerald-500/20 text-zinc-100">
+    <div className="flex h-screen bg-zinc-50 dark:bg-black overflow-hidden font-sans selection:bg-emerald-500/20 text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-[100] w-64 bg-[#050505] border-r border-white/5 flex flex-col transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-[100] w-64 bg-white dark:bg-[#050505] border-r border-zinc-200 dark:border-white/5 flex flex-col transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-6 flex-1 overflow-y-auto custom-scroll">
-          <div className="flex items-center gap-3 mb-10 group cursor-pointer" onClick={() => window.location.reload()}>
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-black font-black italic shadow-lg shrink-0 text-lg group-hover:scale-110 transition-transform">!</div>
-            <h1 className="text-xl font-black tracking-tighter uppercase italic text-white truncate">RiskIT</h1>
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => window.location.reload()}>
+              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-black font-black italic shadow-lg shrink-0 text-lg group-hover:scale-110 transition-transform">!</div>
+              <h1 className="text-xl font-black tracking-tighter uppercase italic text-zinc-900 dark:text-white truncate">RiskIT</h1>
+            </div>
+            {/* Theme Toggle (Sidebar Mobile/Desktop Logo Row) */}
+            <button onClick={toggleTheme} className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-900/40 text-zinc-500 dark:text-zinc-400 hover:text-emerald-500 transition-colors lg:hidden">
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
           </div>
           
           <nav className="space-y-1.5 mb-8">
@@ -294,10 +314,10 @@ export default function App() {
               <button 
                 key={tab.id} 
                 onClick={() => { setActiveTab(tab.id as TabType); setIsSidebarOpen(false); setApiError(null); }} 
-                className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl transition-all group relative overflow-hidden ${activeTab === tab.id ? 'bg-zinc-900/60 text-white border border-white/10 shadow-md' : 'text-zinc-600 hover:text-zinc-200 hover:bg-zinc-900/20'}`}
+                className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl transition-all group relative overflow-hidden ${activeTab === tab.id ? 'bg-zinc-100 dark:bg-zinc-900/60 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 shadow-sm dark:shadow-md' : 'text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/20'}`}
               >
                 {activeTab === tab.id && <div className="absolute left-0 h-4 w-1 bg-emerald-500 rounded-full" />}
-                <tab.icon size={16} className={activeTab === tab.id ? 'text-emerald-500' : 'group-hover:text-zinc-300'} />
+                <tab.icon size={16} className={activeTab === tab.id ? 'text-emerald-500' : 'group-hover:text-zinc-400 dark:group-hover:text-zinc-300'} />
                 <span className="font-bold uppercase text-[9px] tracking-[0.2em] truncate">{tab.label}</span>
               </button>
             ))}
@@ -307,28 +327,42 @@ export default function App() {
           <TeamCredits />
         </div>
         
-        <div className="p-6 border-t border-white/5 bg-zinc-950/20 shrink-0">
-          <div className="flex items-center gap-3 p-3 bg-black border border-white/5 rounded-xl mb-4 relative overflow-hidden group/status">
+        <div className="p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-950/20 shrink-0">
+          <div className="flex items-center gap-3 p-3 bg-white dark:bg-black border border-zinc-200 dark:border-white/5 rounded-xl mb-4 relative overflow-hidden group/status">
              <div className="absolute inset-0 bg-emerald-500/5 translate-y-full group-hover/status:translate-y-0 transition-transform" />
              <Cpu size={12} className={`shrink-0 z-10 ${engine !== 'DISCONNECTED' ? 'text-emerald-500' : 'text-rose-500'}`} />
-             <span className="text-[9px] font-mono text-zinc-300 font-bold tracking-tighter truncate z-10 uppercase">{engine}</span>
+             <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-300 font-bold tracking-tighter truncate z-10 uppercase">{engine}</span>
           </div>
-          <div className="flex justify-between text-[8px] font-mono text-zinc-700">
+          <div className="flex justify-between text-[8px] font-mono text-zinc-400 dark:text-zinc-700">
             <span>SYS_STABILITY</span>
             <span className="text-emerald-500/60 uppercase">OK</span>
           </div>
         </div>
-        <button className="absolute top-6 right-6 text-zinc-600 lg:hidden p-2" onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
+        <button className="absolute top-6 right-6 text-zinc-400 dark:text-zinc-600 lg:hidden p-2" onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
       </aside>
 
       {/* Main Container */}
-      <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#020202]">
+      <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-zinc-50 dark:bg-[#020202]">
         <TickerTape />
         
-        <header className="lg:hidden h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/90 backdrop-blur-md z-[80] shrink-0">
-          <button onClick={() => setIsSidebarOpen(true)} className="text-zinc-400 p-2 rounded-lg"><Menu size={20} /></button>
-          <span className="text-[10px] font-black tracking-[0.4em] uppercase text-emerald-500 italic truncate">{activeTab}</span>
-          <div className="w-10" />
+        <header className="h-14 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-6 bg-white/90 dark:bg-black/90 backdrop-blur-md z-[80] shrink-0">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="text-zinc-400 p-2 rounded-lg lg:hidden"><Menu size={20} /></button>
+            <span className="text-[10px] font-black tracking-[0.4em] uppercase text-emerald-500 italic truncate">{activeTab}</span>
+          </div>
+          
+          {/* Header Actions (Theme Toggle) */}
+          <div className="flex items-center gap-3">
+             <button 
+              onClick={toggleTheme} 
+              className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-500 transition-all border border-zinc-200 dark:border-white/5 shadow-sm active:scale-95"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+             >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+             </button>
+             <div className="w-px h-6 bg-zinc-200 dark:bg-white/5 mx-1" />
+             <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-black italic text-[10px]">R</div>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 space-y-8">
@@ -341,19 +375,19 @@ export default function App() {
                 {apiError && <ErrorOverlay message={apiError} onRetry={handleArchitect} onDismiss={() => setApiError(null)} />}
                 
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">ARCHITECT</h2>
-                  <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-[0.3em]">Strategy Lab</p>
+                  <h2 className="text-2xl font-black italic uppercase tracking-tighter text-zinc-900 dark:text-white">ARCHITECT</h2>
+                  <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-[0.3em]">Strategy Lab</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-1.5"><label className="text-zinc-500 text-[8px] font-black uppercase tracking-widest ml-1">Asset Allocation</label><input type="number" className="field-input py-2" value={recInputs.amount} onChange={(e) => setRecInputs({ ...recInputs, amount: e.target.value })} /></div>
-                  <div className="space-y-1.5"><label className="text-zinc-500 text-[8px] font-black uppercase tracking-widest ml-1">Market Segment</label><input type="text" className="field-input py-2" placeholder="e.g. US Tech" value={recInputs.market} onChange={(e) => setRecInputs({ ...recInputs, market: e.target.value })} /></div>
-                  <div className="space-y-1.5"><label className="text-zinc-500 text-[8px] font-black uppercase tracking-widest ml-1">Horizon</label><select className="field-input py-2" value={recInputs.horizon} onChange={(e) => setRecInputs({ ...recInputs, horizon: e.target.value })}><option>Short Term</option><option>Medium Term</option><option>Long Term</option></select></div>
+                  <div className="space-y-1.5"><label className="text-zinc-400 dark:text-zinc-500 text-[8px] font-black uppercase tracking-widest ml-1">Asset Allocation</label><input type="number" className="field-input py-2" value={recInputs.amount} onChange={(e) => setRecInputs({ ...recInputs, amount: e.target.value })} /></div>
+                  <div className="space-y-1.5"><label className="text-zinc-400 dark:text-zinc-500 text-[8px] font-black uppercase tracking-widest ml-1">Market Segment</label><input type="text" className="field-input py-2" placeholder="e.g. US Tech" value={recInputs.market} onChange={(e) => setRecInputs({ ...recInputs, market: e.target.value })} /></div>
+                  <div className="space-y-1.5"><label className="text-zinc-400 dark:text-zinc-500 text-[8px] font-black uppercase tracking-widest ml-1">Horizon</label><select className="field-input py-2" value={recInputs.horizon} onChange={(e) => setRecInputs({ ...recInputs, horizon: e.target.value })}><option>Short Term</option><option>Medium Term</option><option>Long Term</option></select></div>
                   
-                  <div className="flex flex-col justify-center p-3 bg-zinc-950/80 border border-zinc-800 rounded-xl cursor-pointer hover:border-emerald-500/30 transition-all group/sharia" onClick={() => setRecInputs({ ...recInputs, halal: !recInputs.halal })}>
+                  <div className="flex flex-col justify-center p-3 bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:border-emerald-500/30 transition-all group/sharia shadow-inner" onClick={() => setRecInputs({ ...recInputs, halal: !recInputs.halal })}>
                     <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-black italic uppercase ${recInputs.halal ? 'text-emerald-500' : 'text-zinc-700'}`}>Sharia Filter</span>
-                      <ShieldCheck size={16} className={`${recInputs.halal ? 'text-emerald-500' : 'text-zinc-800'} group-hover/sharia:scale-110 transition-transform`} />
+                      <span className={`text-[10px] font-black italic uppercase ${recInputs.halal ? 'text-emerald-500' : 'text-zinc-400 dark:text-zinc-700'}`}>Sharia Filter</span>
+                      <ShieldCheck size={16} className={`${recInputs.halal ? 'text-emerald-500' : 'text-zinc-200 dark:text-zinc-800'} group-hover/sharia:scale-110 transition-transform`} />
                     </div>
                   </div>
                 </div>
@@ -364,14 +398,14 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="glass-card p-6 bg-zinc-950/20 min-h-[400px] flex flex-col">
-                <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]">Strategic Nodes</span>
-                  <RefreshCw size={12} className={`text-zinc-800 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+              <div className="glass-card p-6 bg-white dark:bg-zinc-950/20 min-h-[400px] flex flex-col">
+                <div className="flex justify-between items-center mb-6 border-b border-zinc-100 dark:border-white/5 pb-4">
+                  <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em]">Strategic Nodes</span>
+                  <RefreshCw size={12} className={`text-zinc-200 dark:text-zinc-800 shrink-0 ${loading ? 'animate-spin' : ''}`} />
                 </div>
                 {recommendations ? (
                   <div className="space-y-6 animate-in fade-in duration-500 text-left">
-                    <p className="text-base text-zinc-300 font-medium italic border-l-2 border-emerald-500/30 pl-4 bg-emerald-500/[0.02] py-4 pr-4 rounded-r-xl">{recommendations.strategy}</p>
+                    <p className="text-base text-zinc-600 dark:text-zinc-300 font-medium italic border-l-2 border-emerald-500/30 pl-4 bg-emerald-500/[0.01] dark:bg-emerald-500/[0.02] py-4 pr-4 rounded-r-xl">{recommendations.strategy}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[450px] overflow-y-auto custom-scroll pr-2">
                       {recommendations.nodes.map((node, i) => (
                         <NodeRow key={i} {...node} onClick={() => { setActiveTab('pathfinder'); handlePathfinder(node.ticker); }} />
@@ -379,10 +413,10 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center opacity-10">
+                  <div className="flex-1 flex flex-col items-center justify-center opacity-20 dark:opacity-10">
                     <div className="relative">
-                      <Coins size={80} className="text-zinc-500" />
-                      <div className="absolute inset-0 animate-pulse border-2 border-emerald-500/20 rounded-full scale-150" />
+                      <Coins size={80} className="text-zinc-300 dark:text-zinc-500" />
+                      <div className="absolute inset-0 animate-pulse border-2 border-emerald-500/10 dark:border-emerald-500/20 rounded-full scale-150" />
                     </div>
                   </div>
                 )}
@@ -393,13 +427,13 @@ export default function App() {
           {/* PATHFINDER TAB */}
           {activeTab === 'pathfinder' && (
             <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 w-full">
-              <div className="glass-card flex flex-col md:flex-row items-center gap-4 p-6 bg-zinc-950 relative overflow-hidden group/search">
+              <div className="glass-card flex flex-col md:flex-row items-center gap-4 p-6 bg-white dark:bg-zinc-950 relative overflow-hidden group/search shadow-xl dark:shadow-none">
                 {loading && <CardLoader label="Scanning..." />}
                 {apiError && <ErrorOverlay message={apiError} onRetry={() => handlePathfinder()} onDismiss={() => setApiError(null)} />}
-                <Search className="text-zinc-800 shrink-0 group-hover/search:text-emerald-500 transition-colors" size={32} />
+                <Search className="text-zinc-300 dark:text-zinc-800 shrink-0 group-hover/search:text-emerald-500 transition-colors" size={32} />
                 <input 
                   placeholder="ENTER TICKER..." 
-                  className="flex-1 bg-transparent text-2xl sm:text-4xl font-black italic uppercase outline-none placeholder:text-zinc-900 text-white tracking-tighter w-full min-w-0" 
+                  className="flex-1 bg-transparent text-2xl sm:text-4xl font-black italic uppercase outline-none placeholder:text-zinc-100 dark:placeholder:text-zinc-900 text-zinc-900 dark:text-white tracking-tighter w-full min-w-0" 
                   value={anaInput} 
                   onChange={(e) => setAnaInput(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handlePathfinder()}
@@ -409,17 +443,17 @@ export default function App() {
 
               {analysis && (
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6 animate-in zoom-in-95 pb-10 text-left items-start">
-                  <div className="glass-card p-6 sm:p-8 bg-zinc-950/80 border-white/5 relative overflow-hidden min-w-0">
+                  <div className="glass-card p-6 sm:p-8 bg-white/80 dark:bg-zinc-950/80 border-black/5 dark:border-white/5 relative overflow-hidden min-w-0">
                     <div className="flex flex-col md:flex-row gap-6 mb-8 items-start md:items-center">
                       <div className="flex-1 min-w-0">
-                        <h2 className="font-black italic uppercase leading-none text-white mb-2 break-words" style={{ fontSize: 'clamp(2rem, 8vw, 4.5rem)' }}>{analysis.ticker}</h2>
-                        <p className="text-sm sm:text-lg text-zinc-500 font-bold uppercase tracking-widest italic truncate">{analysis.name}</p>
+                        <h2 className="font-black italic uppercase leading-none text-zinc-900 dark:text-white mb-2 break-words" style={{ fontSize: 'clamp(2rem, 8vw, 4.5rem)' }}>{analysis.ticker}</h2>
+                        <p className="text-sm sm:text-lg text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest italic truncate">{analysis.name}</p>
                       </div>
 
-                      <div className="bg-black/40 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 shrink-0 group/health">
+                      <div className="bg-zinc-100 dark:bg-black/40 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 flex flex-col items-center gap-2 shrink-0 group/health">
                         <div className="relative w-24 h-24 flex items-center justify-center">
                            <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                              <circle cx="50" cy="50" r="44" fill="none" stroke="#09090b" strokeWidth="10" />
+                              <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="10" className="text-zinc-200 dark:text-[#09090b]" />
                               <circle 
                                 cx="50" cy="50" r="44" fill="none" stroke="#10b981" strokeWidth="10" 
                                 strokeDasharray="276" 
@@ -432,29 +466,29 @@ export default function App() {
                              <QuantValue value={Math.round(getNormalizedHealth(analysis.health) * 100)} />
                            </span>
                         </div>
-                        <span className="text-[8px] font-black uppercase text-zinc-600 tracking-widest group-hover/health:text-emerald-500 transition-colors">Health_Index</span>
+                        <span className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-widest group-hover/health:text-emerald-500 transition-colors">Health_Index</span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
                       {analysis.metrics.map((m, i) => (
-                        <div key={i} className="p-3 bg-zinc-900/50 border border-white/5 rounded-xl flex flex-col min-w-0 group/metric hover:border-zinc-700 transition-colors">
-                           <span className="text-[7px] font-black uppercase tracking-widest text-zinc-700 mb-0.5 truncate group-hover/metric:text-zinc-500">{m.label}</span>
-                           <span className="text-sm font-black text-zinc-200 italic truncate">{m.value}</span>
+                        <div key={i} className="p-3 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-xl flex flex-col min-w-0 group/metric hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors shadow-sm">
+                           <span className="text-[7px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-700 mb-0.5 truncate group-hover/metric:text-zinc-600 dark:group-hover/metric:text-zinc-500">{m.label}</span>
+                           <span className="text-sm font-black text-zinc-700 dark:text-zinc-200 italic truncate">{m.value}</span>
                         </div>
                       ))}
                     </div>
 
-                    <div className="p-4 bg-black border border-white/5 rounded-xl mb-8 relative">
+                    <div className="p-4 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-white/5 rounded-xl mb-8 relative shadow-inner">
                       <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/20" />
-                      <p className="text-sm sm:text-base text-zinc-400 italic leading-relaxed break-words pl-2">"{analysis.desc}"</p>
+                      <p className="text-sm sm:text-base text-zinc-500 dark:text-zinc-400 italic leading-relaxed break-words pl-2">"{analysis.desc}"</p>
                     </div>
 
                     {/* MARKET SENTIMENT SECTION */}
                     <div className="space-y-6">
-                      <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-                        <Activity size={14} className="text-zinc-700" />
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">Market Sentiment Scan</h3>
+                      <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-2">
+                        <Activity size={14} className="text-zinc-300 dark:text-zinc-700" />
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-700">Market Sentiment Scan</h3>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {analysis.sentiment?.map((s, i) => (
@@ -465,28 +499,28 @@ export default function App() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="glass-card p-5 bg-zinc-950/60 space-y-4 shadow-xl">
-                       <h3 className="text-[8px] font-black uppercase text-zinc-600 tracking-widest border-b border-white/5 pb-2">Risk Catalysts</h3>
+                    <div className="glass-card p-5 bg-white dark:bg-zinc-950/60 space-y-4 shadow-xl border-zinc-200 dark:border-white/5">
+                       <h3 className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-widest border-b border-zinc-100 dark:border-white/5 pb-2">Risk Catalysts</h3>
                        <div className="space-y-2">
                           {analysis.catalysts.map((cat, i) => (
-                            <div key={i} className="p-3 bg-black border border-white/5 rounded-lg group/cat hover:border-rose-500/20 transition-all">
+                            <div key={i} className="p-3 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-white/5 rounded-lg group/cat hover:border-rose-500/20 transition-all shadow-sm">
                                <div className="flex items-center justify-between mb-1">
                                  <span className={`text-[7px] font-black px-1.5 py-0.5 rounded border ${cat.impact === 'high' ? 'text-rose-500 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]' : 'text-orange-500 border-orange-500/20 shadow-[0_0_10px_rgba(249,115,22,0.1)]'}`}>{cat.impact.toUpperCase()}</span>
-                                 <AlertCircle size={10} className="text-zinc-800 group-hover/cat:text-zinc-600" />
+                                 <AlertCircle size={10} className="text-zinc-300 dark:text-zinc-800 group-hover/cat:text-zinc-600" />
                                </div>
-                               <span className="text-[11px] font-bold text-zinc-400 italic block leading-tight group-hover/cat:text-zinc-200 transition-colors">"{cat.title}"</span>
+                               <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 italic block leading-tight group-hover/cat:text-zinc-900 dark:group-hover/cat:text-zinc-200 transition-colors">"{cat.title}"</span>
                             </div>
                           ))}
                        </div>
                     </div>
-                    <div className="glass-card p-5 bg-zinc-950/60 space-y-4 text-left border-l-2 border-l-emerald-500/20">
+                    <div className="glass-card p-5 bg-white dark:bg-zinc-950/60 space-y-4 text-left border-l-2 border-l-emerald-500/20 border-zinc-200 dark:border-white/5">
                        <div className="flex items-center justify-between group/bull">
-                         <div className="min-w-0"><span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest block mb-0.5">Bullish_Outlook</span><span className="text-emerald-500 font-black italic text-xs truncate block uppercase">{analysis.short}</span></div>
-                         <BullIcon size={16} className="text-emerald-950/40 group-hover/bull:text-emerald-500 transition-colors" />
+                         <div className="min-w-0"><span className="text-[7px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block mb-0.5">Bullish_Outlook</span><span className="text-emerald-600 dark:text-emerald-500 font-black italic text-xs truncate block uppercase">{analysis.short}</span></div>
+                         <BullIcon size={16} className="text-emerald-500/20 dark:text-emerald-950/40 group-hover/bull:text-emerald-500 transition-colors" />
                        </div>
-                       <div className="flex items-center justify-between pt-2 border-t border-white/5 group/stability">
-                         <div className="min-w-0"><span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest block mb-0.5">Stability_Rating</span><span className="text-blue-500 font-black italic text-xs truncate block uppercase">{analysis.long}</span></div>
-                         <Shield size={16} className="text-blue-950/40 group-hover/stability:text-blue-500 transition-colors" />
+                       <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-white/5 group/stability">
+                         <div className="min-w-0"><span className="text-[7px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block mb-0.5">Stability_Rating</span><span className="text-blue-600 dark:text-blue-500 font-black italic text-xs truncate block uppercase">{analysis.long}</span></div>
+                         <Shield size={16} className="text-blue-500/20 dark:text-blue-950/40 group-hover/stability:text-blue-500 transition-colors" />
                        </div>
                     </div>
                   </div>
@@ -497,113 +531,177 @@ export default function App() {
 
           {/* COMPARATOR TAB */}
           {activeTab === 'comparator' && (
-            <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 w-full pb-20">
-              <div className="flex justify-between items-center px-4 mb-4">
+            <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 w-full pb-20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4">
                  <div className="text-left">
-                   <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">DUEL RESOLVER</h2>
-                   <p className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em]">Benchmarking</p>
+                   <h2 className="text-2xl font-black italic uppercase tracking-tighter text-zinc-900 dark:text-white">DUEL RESOLVER</h2>
+                   <p className="text-[9px] font-black text-zinc-400 dark:text-zinc-700 uppercase tracking-[0.4em]">Multi-Node Benchmarking</p>
                  </div>
-                 <button onClick={handleClearComparator} className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-white/5 rounded-lg text-zinc-500 hover:text-rose-500 transition-colors text-[9px] font-black uppercase tracking-widest active:scale-95">
-                   <Trash2 size={12} /> Clear All
+                 <button 
+                  onClick={handleClearComparator} 
+                  className="group flex items-center gap-2 px-6 py-2.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl text-zinc-500 hover:text-rose-500 hover:border-rose-500/30 transition-all text-[10px] font-black uppercase tracking-widest active:scale-95 shadow-sm"
+                 >
+                   <Trash2 size={12} className="group-hover:rotate-12 transition-transform" /> 
+                   Clear All Nodes
                  </button>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-1.5 px-4 mb-8">
+              <div className="flex flex-wrap justify-center gap-1.5 px-4">
                 {[
                   { l: "DXY vs SPX", a: "DXY", b: "SPX" },
                   { l: "BTC vs ETH", a: "BTC", b: "ETH" },
                   { l: "NVDA vs AMD", a: "NVDA", b: "AMD" },
                   { l: "TLT vs QQQ", a: "TLT", b: "QQQ" },
                 ].map((d, i) => (
-                  <button key={i} onClick={() => handleComparator(d.a, d.b)} className="px-3 py-1.5 rounded-lg bg-zinc-900/50 border border-white/5 text-[7px] font-black uppercase tracking-widest text-zinc-500 hover:text-emerald-500 transition-all hover:border-emerald-500/20 active:scale-95">
+                  <button key={i} onClick={() => handleComparator(d.a, d.b)} className="px-4 py-2 rounded-xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 text-[8px] font-black uppercase tracking-widest text-zinc-500 hover:text-emerald-500 transition-all hover:border-emerald-500/20 active:scale-95 shadow-sm">
                     {d.l}
                   </button>
                 ))}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center relative text-left px-4">
-                {loading && <CardLoader label="Comparing..." />}
+              {/* DUAL TERMINAL INTERFACE */}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-stretch relative text-left px-4">
+                {loading && <CardLoader label="Synthesizing Duel Logic..." />}
                 {apiError && <ErrorOverlay message={apiError} onRetry={() => handleComparator()} onDismiss={() => setApiError(null)} />}
                 
-                {/* NODE ALPHA (BLUE) */}
-                <div className="glass-card p-6 bg-blue-500/[0.03] border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.05)] hover:border-blue-500/40 group/alpha">
-                   <div className="flex items-center justify-between mb-4">
-                     <span className="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] italic group-hover/alpha:animate-pulse">NODE_ALPHA</span>
-                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                {/* NODE ALPHA - BLUE THEME */}
+                <div className="glass-card p-6 sm:p-10 bg-blue-500/[0.03] dark:bg-blue-600/[0.02] border-blue-500/20 dark:border-blue-500/40 shadow-[0_0_50px_rgba(37,99,235,0.08)] hover:border-blue-500/50 group/alpha transition-all relative overflow-hidden">
+                   <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600/30 rounded-l-[var(--radius-xl)]" />
+                   <div className="flex items-center justify-between mb-8">
+                     <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_12px_rgba(59,130,246,0.8)]" />
+                        <span className="text-[11px] font-black text-blue-500 uppercase tracking-[0.4em] italic">ALPHA_TERMINAL</span>
+                     </div>
+                     <Landmark size={14} className="text-blue-500/20" />
                    </div>
-                   <input 
-                     className="w-full bg-transparent border-b border-zinc-900 py-3 text-center text-4xl font-black italic uppercase text-blue-100 outline-none focus:border-blue-500 transition-all placeholder:text-zinc-900" 
-                     placeholder="TICKER" 
-                     value={compInputs.s1} 
-                     onChange={(e) => setCompInputs({ ...compInputs, s1: e.target.value.toUpperCase() })} 
-                   />
+                   <div className="relative group/field">
+                     <input 
+                       className="w-full bg-zinc-50 dark:bg-black/40 border border-zinc-100 dark:border-zinc-800 rounded-2xl py-6 text-center text-4xl sm:text-6xl font-black italic uppercase text-blue-600 dark:text-blue-100 outline-none focus:border-blue-500 transition-all placeholder:text-zinc-200 dark:placeholder:text-zinc-900 tracking-tighter shadow-inner" 
+                       placeholder="NODE_A" 
+                       value={compInputs.s1} 
+                       onChange={(e) => setCompInputs({ ...compInputs, s1: e.target.value.toUpperCase() })} 
+                     />
+                     <div className="absolute inset-x-0 bottom-0 h-1 bg-blue-500/10 scale-x-0 group-focus-within/field:scale-x-100 transition-transform origin-center" />
+                   </div>
                 </div>
 
-                <div className="w-12 h-12 flex items-center justify-center bg-zinc-900 rounded-full mx-auto select-none shrink-0 border border-white/5 z-10 shadow-2xl group/vs">
-                  <span className="text-zinc-600 font-black italic text-sm tracking-tighter group-hover/vs:text-zinc-400 group-hover/vs:scale-110 transition-all">VS</span>
+                <div className="flex items-center justify-center relative">
+                  <div className="absolute inset-y-0 w-px bg-zinc-200 dark:bg-zinc-800 hidden md:block" />
+                  <div className="w-16 h-16 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 rounded-2xl md:rounded-full select-none shrink-0 border-2 border-zinc-200 dark:border-zinc-800 z-10 shadow-2xl transform hover:rotate-[360deg] transition-transform duration-1000 group/vs">
+                    <span className="text-zinc-400 dark:text-zinc-600 font-black italic text-xl tracking-tighter group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">VS</span>
+                  </div>
                 </div>
 
-                {/* NODE BETA (ROSE) */}
-                <div className="glass-card p-6 bg-rose-500/[0.03] border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.05)] hover:border-rose-500/40 group/beta">
-                   <div className="flex items-center justify-between mb-4">
-                     <div className="w-1.5 h-1.5 rounded-full bg-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
-                     <span className="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] italic text-right group-hover/beta:animate-pulse">NODE_BETA</span>
+                {/* NODE BETA - ROSE THEME */}
+                <div className="glass-card p-6 sm:p-10 bg-rose-500/[0.03] dark:bg-rose-600/[0.02] border-rose-500/20 dark:border-rose-500/40 shadow-[0_0_50px_rgba(225,29,72,0.08)] hover:border-rose-500/50 group/beta transition-all relative overflow-hidden text-right">
+                   <div className="absolute top-0 right-0 w-1.5 h-full bg-rose-600/30 rounded-r-[var(--radius-xl)]" />
+                   <div className="flex items-center justify-between mb-8">
+                     <Landmark size={14} className="text-rose-500/20" />
+                     <div className="flex items-center gap-3">
+                        <span className="text-[11px] font-black text-rose-500 uppercase tracking-[0.4em] italic">BETA_TERMINAL</span>
+                        <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.8)]" />
+                     </div>
                    </div>
-                   <input 
-                     className="w-full bg-transparent border-b border-zinc-900 py-3 text-center text-4xl font-black italic uppercase text-rose-100 outline-none focus:border-rose-500 transition-all placeholder:text-zinc-900 text-right" 
-                     placeholder="TICKER" 
-                     value={compInputs.s2} 
-                     onChange={(e) => setCompInputs({ ...compInputs, s2: e.target.value.toUpperCase() })} 
-                   />
+                   <div className="relative group/field-b">
+                     <input 
+                       className="w-full bg-zinc-50 dark:bg-black/40 border border-zinc-100 dark:border-zinc-800 rounded-2xl py-6 text-center text-4xl sm:text-6xl font-black italic uppercase text-rose-600 dark:text-rose-100 outline-none focus:border-rose-500 transition-all placeholder:text-zinc-200 dark:placeholder:text-zinc-900 tracking-tighter shadow-inner" 
+                       placeholder="NODE_B" 
+                       value={compInputs.s2} 
+                       onChange={(e) => setCompInputs({ ...compInputs, s2: e.target.value.toUpperCase() })} 
+                     />
+                     <div className="absolute inset-x-0 bottom-0 h-1 bg-rose-500/10 scale-x-0 group-focus-within/field-b:scale-x-100 transition-transform origin-center" />
+                   </div>
                 </div>
               </div>
 
-              <div className="px-8 flex gap-3">
-                <button onClick={() => handleComparator()} disabled={loading} className="btn-primary flex-1 py-4 text-[11px] italic font-black rounded-xl shadow-lg hover:shadow-emerald-500/10">Start Resolution Duel</button>
+              <div className="px-4">
+                <button 
+                  onClick={() => handleComparator()} 
+                  disabled={loading} 
+                  className="btn-primary w-full py-6 text-[14px] italic font-black rounded-2xl shadow-2xl hover:shadow-emerald-500/30 group/duel border-2 border-emerald-500/20"
+                >
+                  <Sword size={20} className="group-hover:rotate-12 transition-transform" />
+                  GENERATE COMPARATIVE RESOLUTION
+                </button>
               </div>
               
               {comparison && (
-                <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 animate-in zoom-in-95 mt-10 px-4">
-                  <div className="glass-card bg-emerald-950/80 p-8 flex flex-col justify-center relative rounded-3xl border-emerald-500/30 overflow-hidden text-left shadow-2xl group/victory">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover/victory:scale-125 transition-transform"><Trophy size={80} /></div>
-                    <span className="text-[10px] font-black uppercase tracking-widest mb-6 text-emerald-500 animate-pulse">VICTORY_NODE</span>
-                    <h2 className="font-black italic uppercase tracking-tighter leading-none text-white mb-8 break-words" style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>{comparison.winner}</h2>
-                    <div className="bg-black/80 px-4 py-2.5 rounded-xl inline-flex items-center gap-3 w-fit border border-white/10 shadow-lg group-hover/victory:border-emerald-500/30 transition-all">
-                       <Zap size={16} className="text-emerald-500 animate-pulse" />
-                       <span className="text-[10px] font-black uppercase tracking-widest truncate">{comparison.decision}</span>
+                <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8 animate-in zoom-in-95 mt-10 px-4">
+                  {/* WINNER SPOTLIGHT */}
+                  <div className={`glass-card p-10 flex flex-col justify-center relative rounded-[2rem] overflow-hidden text-left shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] transition-all duration-700 ${comparison.winner === compInputs.s1 ? 'bg-blue-600/10 dark:bg-blue-900/40 border-blue-500/40' : 'bg-rose-600/10 dark:bg-rose-900/40 border-rose-500/40'}`}>
+                    <div className="absolute top-0 right-0 p-6 opacity-[0.1] dark:opacity-[0.05] pointer-events-none group-hover:scale-110 transition-transform"><Trophy size={120} /></div>
+                    <div className="flex items-center gap-2 mb-8">
+                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                       <span className="text-[11px] font-black uppercase tracking-[0.5em] text-emerald-600 dark:text-emerald-500">RESOLVED_SUPERIOR</span>
+                    </div>
+                    <h2 className="font-black italic uppercase tracking-tighter leading-none text-zinc-900 dark:text-white mb-10 break-words" style={{ fontSize: 'clamp(3.5rem, 10vw, 6rem)' }}>{comparison.winner}</h2>
+                    <div className="bg-white dark:bg-black/90 p-5 rounded-3xl inline-flex items-center gap-4 w-fit border border-zinc-200 dark:border-white/10 shadow-xl backdrop-blur-xl">
+                       <div className="bg-emerald-500 p-2 rounded-lg"><Zap size={20} className="text-black" /></div>
+                       <div className="flex flex-col">
+                          <span className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">Decision</span>
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter truncate">{comparison.decision}</span>
+                       </div>
                     </div>
                   </div>
                   
-                  <div className="glass-card p-8 bg-zinc-950/60 border-white/5 rounded-3xl min-w-0 shadow-xl text-left">
-                    <h3 className="text-[10px] font-black uppercase text-zinc-600 tracking-widest mb-10 pb-4 border-b border-white/10">Neural Scorecard</h3>
-                    <div className="space-y-12">
+                  {/* SCORECARD SECTIONS */}
+                  <div className="glass-card p-8 sm:p-12 bg-white/90 dark:bg-zinc-950/70 border-zinc-200 dark:border-white/10 rounded-[2rem] min-w-0 shadow-2xl text-left relative overflow-hidden backdrop-blur-3xl">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-zinc-200 dark:via-zinc-800 to-rose-500 opacity-40" />
+                    <div className="flex items-center justify-between mb-16 pb-6 border-b border-zinc-100 dark:border-white/5">
+                       <h3 className="text-[12px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-[0.6em]">Neural Comparison Ledger</h3>
+                       <Layers size={16} className="text-zinc-200 dark:text-zinc-800" />
+                    </div>
+                    
+                    <div className="space-y-16">
                       {comparison.scorecard.map((s, i) => (
-                        <div key={i} className="space-y-4">
-                          <div className="flex justify-between items-end gap-2 px-1">
-                            <div className="flex flex-col flex-1 min-w-0">
-                              <span className="text-[8px] font-black text-blue-500 uppercase truncate mb-1">{compInputs.s1 || 'ALPHA'}</span>
-                              <span className="text-sm sm:text-lg font-black italic text-blue-100 truncate">{s.s1Value}</span>
+                        <div key={i} className="group/metric-row relative">
+                          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-end gap-6 mb-6">
+                            {/* Alpha Value */}
+                            <div className="flex flex-col bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100/50 dark:border-blue-900/20 transition-all hover:border-blue-500/30">
+                              <span className="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] mb-2">{compInputs.s1 || 'ALPHA'}</span>
+                              <span className="text-2xl sm:text-3xl font-black italic text-blue-900 dark:text-blue-100 truncate tracking-tighter">{s.s1Value}</span>
                             </div>
                             
-                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest pb-1.5 text-center border-b border-white/10 flex-1 mx-4 mb-1">{s.label}</span>
+                            {/* Metric Label */}
+                            <div className="flex flex-col items-center justify-center pb-2">
+                                <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em] whitespace-nowrap px-4 py-1.5 bg-zinc-50 dark:bg-zinc-900 rounded-full border border-zinc-100 dark:border-zinc-800 shadow-sm">{s.label}</span>
+                            </div>
                             
-                            <div className="flex flex-col text-right flex-1 min-w-0">
-                              <span className="text-[8px] font-black text-rose-500 uppercase truncate mb-1">{compInputs.s2 || 'BETA'}</span>
-                              <span className="text-sm sm:text-lg font-black italic text-rose-100 truncate">{s.s2Value}</span>
+                            {/* Beta Value */}
+                            <div className="flex flex-col text-right bg-rose-50/50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100/50 dark:border-rose-900/20 transition-all hover:border-rose-500/30">
+                              <span className="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] mb-2">{compInputs.s2 || 'BETA'}</span>
+                              <span className="text-2xl sm:text-3xl font-black italic text-rose-900 dark:text-rose-100 truncate tracking-tighter">{s.s2Value}</span>
                             </div>
                           </div>
                           
-                          <div className="h-2.5 flex bg-zinc-900 rounded-full overflow-hidden relative w-full shadow-inner border border-white/5 group/bar">
-                             <div className="h-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)] transition-all duration-1000 ease-out" style={{ width: `${s.s1Percent / (s.s1Percent + s.s2Percent) * 100}%` }} />
-                             <div className="h-full bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.4)] transition-all duration-1000 ease-out" style={{ width: `${s.s2Percent / (s.s1Percent + s.s2Percent) * 100}%` }} />
-                             <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-black/60 z-10" />
+                          {/* COMPARATIVE SPECTRUM BAR */}
+                          <div className="relative h-4 bg-zinc-100 dark:bg-zinc-900 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-inner overflow-hidden flex">
+                             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-transparent to-rose-500/10 pointer-events-none" />
+                             {/* Alpha Segment */}
+                             <div 
+                              className="h-full bg-gradient-to-r from-blue-700 to-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-1000 ease-out relative group-hover/metric-row:brightness-110" 
+                              style={{ width: `${s.s1Percent / (s.s1Percent + s.s2Percent) * 100}%` }}
+                             >
+                               <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-white/30 blur-[2px]" />
+                             </div>
+                             {/* Beta Segment */}
+                             <div 
+                              className="h-full bg-gradient-to-l from-rose-700 to-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.4)] transition-all duration-1000 ease-out relative group-hover/metric-row:brightness-110" 
+                              style={{ width: `${s.s2Percent / (s.s1Percent + s.s2Percent) * 100}%` }}
+                             >
+                               <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-white/30 blur-[2px]" />
+                             </div>
+                             {/* Center Deadzone Marker */}
+                             <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-white dark:bg-black/90 z-20 shadow-[0_0_15px_black]" />
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-12 p-8 bg-black/60 border border-white/5 rounded-2xl relative overflow-hidden group/sum shadow-inner">
-                      <div className="absolute inset-0 bg-emerald-500/[0.01] pointer-events-none" />
-                      <p className="text-base sm:text-lg text-zinc-400 italic leading-relaxed break-words font-medium group-hover/sum:text-zinc-200 transition-colors">"{comparison.summary}"</p>
+
+                    <div className="mt-20 p-10 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-3xl relative overflow-hidden group/summary shadow-inner backdrop-blur-xl">
+                      <div className="absolute top-0 left-0 w-3 h-full bg-emerald-500/20" />
+                      <div className="absolute top-4 right-6 opacity-[0.05]"><Activity size={40} /></div>
+                      <p className="text-lg sm:text-2xl text-zinc-600 dark:text-zinc-300 italic leading-relaxed break-words font-medium group-hover/summary:text-zinc-900 dark:group-hover/summary:text-white transition-colors">"{comparison.summary}"</p>
                     </div>
                     <SourceLink sources={comparison.sources || []} />
                   </div>
@@ -617,8 +715,8 @@ export default function App() {
             <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 w-full pb-20">
                <div className="flex justify-between items-end gap-4 mb-8 text-left px-4">
                   <div className="space-y-1">
-                     <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">PULSE</h2>
-                     <p className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em]">Live Intel Feed</p>
+                     <h2 className="text-2xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter">PULSE</h2>
+                     <p className="text-[8px] font-black text-zinc-400 dark:text-zinc-700 uppercase tracking-[0.4em]">Live Intel Feed</p>
                   </div>
                   <button onClick={handleFetchPulse} className="w-10 h-10 glass-card items-center justify-center text-emerald-500 hover:text-emerald-400 active:scale-95 transition-all shadow-lg hover:border-emerald-500/20"><RefreshCw size={18} className={loading ? 'animate-spin' : ''} /></button>
                </div>
@@ -627,18 +725,18 @@ export default function App() {
                   {loading && <CardLoader label="Syncing..." />}
                   {apiError && <ErrorOverlay message={apiError} onRetry={handleFetchPulse} onDismiss={() => setApiError(null)} />}
                   {pulseItems.map((item, i) => (
-                    <div key={i} className="group glass-card flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-zinc-900 transition-all border-l-2 border-l-zinc-900 hover:border-l-emerald-500 cursor-pointer text-left gap-4 overflow-hidden shadow-md">
+                    <div key={i} className="group glass-card flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all border-l-2 border-l-zinc-100 dark:border-l-zinc-900 hover:border-l-emerald-500 cursor-pointer text-left gap-4 overflow-hidden shadow-sm hover:shadow-md">
                       <div className="flex items-start md:items-center gap-4 min-w-0">
                         <div className="text-left md:text-center min-w-[70px] shrink-0">
-                          <span className="block font-mono text-zinc-700 text-[9px] mb-1">{item.time}</span>
+                          <span className="block font-mono text-zinc-400 dark:text-zinc-700 text-[9px] mb-1">{item.time}</span>
                           <div className={`text-[7px] font-black px-1.5 py-0.5 rounded border inline-block ${item.impact === 'High' ? 'text-rose-500 border-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.1)]' : 'text-emerald-500 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]'}`}>{item.impact}</div>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-black text-zinc-300 group-hover:text-white transition-colors text-base mb-1 uppercase italic truncate">{item.title}</h4>
-                          <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">{item.sector}</span>
+                          <h4 className="font-black text-zinc-700 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white transition-colors text-base mb-1 uppercase italic truncate">{item.title}</h4>
+                          <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">{item.sector}</span>
                         </div>
                       </div>
-                      <ArrowRight size={20} className="hidden md:block text-zinc-900 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all shrink-0" />
+                      <ArrowRight size={20} className="hidden md:block text-zinc-200 dark:text-zinc-900 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all shrink-0" />
                     </div>
                   ))}
                   <SourceLink sources={pulseSources} />
@@ -662,16 +760,16 @@ const RadialSentimentChart: React.FC<{ label: string; score: number }> = ({ labe
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="glass-card p-6 bg-zinc-900/40 border-white/5 flex flex-col items-center justify-center shadow-lg group/sent hover:bg-zinc-900/60 transition-all relative">
-      <div className="absolute top-2 right-4 opacity-10 group-hover:opacity-20 transition-opacity"><Icon size={40} /></div>
+    <div className="glass-card p-6 bg-white/60 dark:bg-zinc-900/40 border-zinc-100 dark:border-white/5 flex flex-col items-center justify-center shadow-md dark:shadow-lg group/sent hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition-all relative">
+      <div className="absolute top-2 right-4 opacity-10 group-hover:opacity-20 transition-opacity"><Icon size={40} className="text-zinc-300 dark:text-zinc-700" /></div>
       <div className="relative w-28 h-28 flex items-center justify-center mb-4">
         <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-          <circle cx="50" cy="50" r={radius} fill="none" stroke="#0f0f0f" strokeWidth="10" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="currentColor" strokeWidth="10" className="text-zinc-100 dark:text-[#0f0f0f]" />
           <circle 
             cx="50" cy="50" r={radius} fill="none" stroke={color} strokeWidth="10" 
             strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" 
-            className="transition-all duration-1000 ease-out drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]"
-            style={{ filter: `drop-shadow(0 0 6px ${color}44)` }}
+            className="transition-all duration-1000 ease-out drop-shadow-[0_0_8px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]"
+            style={{ filter: `drop-shadow(0 0 6px ${color}22)` }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -682,8 +780,8 @@ const RadialSentimentChart: React.FC<{ label: string; score: number }> = ({ labe
         </div>
       </div>
       <div className="text-center">
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-200 block mb-1">{label}</span>
-        <div className="w-12 h-0.5 bg-white/5 mx-auto rounded-full overflow-hidden">
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-200 block mb-1">{label}</span>
+        <div className="w-12 h-0.5 bg-zinc-100 dark:bg-white/5 mx-auto rounded-full overflow-hidden">
           <div className="h-full bg-emerald-500/20 animate-pulse" style={{ width: `${score}%` }} />
         </div>
       </div>
@@ -694,16 +792,16 @@ const RadialSentimentChart: React.FC<{ label: string; score: number }> = ({ labe
 const SourceLink: React.FC<{ sources: GroundingSource[] }> = ({ sources }) => {
   if (!sources?.length) return null;
   return (
-    <div className="mt-8 pt-6 border-t border-white/5 text-left">
+    <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-white/5 text-left">
       <div className="flex items-center gap-2 mb-4">
-        <Globe size={12} className="text-zinc-800" />
-        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-800">Verified_Context</span>
+        <Globe size={12} className="text-zinc-300 dark:text-zinc-800" />
+        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300 dark:text-zinc-800">Verified_Context</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {sources.map((s, i) => (
-          <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-zinc-950 border border-white/5 rounded-lg hover:border-emerald-500/40 transition-all group overflow-hidden shadow-sm hover:shadow-emerald-500/[0.03]">
-            <span className="text-[9px] text-zinc-600 group-hover:text-zinc-100 truncate pr-4 font-bold uppercase">{s.title}</span>
-            <ExternalLink size={10} className="text-zinc-800 group-hover:text-emerald-500 transition-colors shrink-0" />
+          <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-white/5 rounded-lg hover:border-emerald-500/40 transition-all group overflow-hidden shadow-sm hover:shadow-emerald-500/[0.03]">
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 truncate pr-4 font-bold uppercase">{s.title}</span>
+            <ExternalLink size={10} className="text-zinc-300 dark:text-zinc-800 group-hover:text-emerald-500 transition-colors shrink-0" />
           </a>
         ))}
       </div>
