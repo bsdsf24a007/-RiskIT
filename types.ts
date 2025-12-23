@@ -32,25 +32,31 @@ export interface ComparisonResponse {
   sources?: GroundingSource[];
 }
 
+export interface Metric {
+  label: string;
+  value: string;
+  status: 'positive' | 'negative' | 'neutral';
+}
+
 export interface AnalysisResponse {
   ticker: string;
   name: string;
-  health: number;
+  health: number; // 0-100 score
+  riskScore: number; // 1-10 rating
   desc: string;
   short: string;
   long: string;
-  metrics: {
-    label: string;
-    value: string;
-    status: 'positive' | 'negative' | 'neutral';
-  }[];
+  fundamentals: Metric[];
+  technicals: Metric[];
   sentiment: {
-    label: string;
-    score: number; // 0-100
-  }[];
+    bullish: number;
+    bearish: number;
+    summary: string;
+  };
   catalysts: {
     title: string;
     impact: 'high' | 'medium' | 'low';
+    description: string;
   }[];
   sources?: GroundingSource[];
 }

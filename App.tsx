@@ -7,10 +7,11 @@ import {
   Zap, Shield, Flame, ChevronRight, AlertCircle,
   Gauge, TrendingUp as BullIcon, TrendingDown as BearIcon, OctagonAlert,
   Cpu, Sword, Gem, Landmark, PieChart, Coins, Users, Layers, Trash2,
-  Sun, Moon
+  Sun, Moon, MousePointer2, ZapOff, Activity as PulseIcon, Key, Info,
+  TrendingUp, TrendingDown, Info as InfoIcon
 } from 'lucide-react';
 import { 
-  TabType, RecommendationResponse, ComparisonResponse, AnalysisResponse, GroundingSource 
+  TabType, RecommendationResponse, ComparisonResponse, AnalysisResponse, GroundingSource, Metric 
 } from './types';
 import { 
   getArchitectStrategy, getComparison, getAnalysis, getLogicPulse, getApiKeyHint, getEngineStatus 
@@ -21,9 +22,10 @@ import {
 /**
  * QuantValue: Animates numbers counting up to simulate terminal data processing
  */
-const QuantValue: React.FC<{ value: number; suffix?: string; prefix?: string; decimals?: number }> = ({ value, suffix = "", prefix = "", decimals = 0 }) => {
+const QuantValue: React.FC<{ value: number; suffix?: string; prefix?: string; decimals?: number; liveUpdate?: boolean }> = ({ value, suffix = "", prefix = "", decimals = 0, liveUpdate = false }) => {
   const [displayValue, setDisplayValue] = useState(0);
-  
+  const [fluctuation, setFluctuation] = useState(0);
+
   useEffect(() => {
     let startTimestamp: number | null = null;
     const duration = 1200;
@@ -43,8 +45,29 @@ const QuantValue: React.FC<{ value: number; suffix?: string; prefix?: string; de
     window.requestAnimationFrame(step);
   }, [value]);
 
-  return <span>{prefix}{displayValue.toFixed(decimals)}{suffix}</span>;
+  useEffect(() => {
+    if (!liveUpdate) {
+      setFluctuation(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      const delta = (Math.random() - 0.5) * (value * 0.001);
+      setFluctuation(delta);
+    }, 2000 + Math.random() * 3000);
+    return () => clearInterval(interval);
+  }, [liveUpdate, value]);
+
+  const finalVal = displayValue + fluctuation;
+
+  return <span className="tabular-nums">{prefix}{finalVal.toFixed(decimals)}{suffix}</span>;
 };
+
+const LiveSignal: React.FC = () => (
+  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+    <span className="text-[7px] font-black uppercase text-emerald-500 tracking-widest">Live_Signal</span>
+  </div>
+);
 
 const TickerTape: React.FC = () => {
   const items = [
@@ -183,17 +206,12 @@ const RiskWidget: React.FC = () => {
 };
 
 const TeamCredits: React.FC = () => {
-  const members = [
-    "Abdullah Rashid",
-    "Moawiz",
-    "Muhammad Abdullah"
-  ];
-
+  const members = ["Abdullah Rashid", "Moawiz", "Muhammad Abdullah"];
   return (
     <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-white/5 space-y-4">
       <div className="flex items-center gap-2 mb-2">
         <Users size={12} className="text-zinc-400 dark:text-zinc-700" />
-        <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-700 tracking-[0.3em]">Team</span>
+        <span className="text-[10px] font-black uppercase text-zinc-700 dark:text-zinc-700 tracking-[0.3em]">Team</span>
       </div>
       <div className="space-y-1.5 px-1 text-left">
         {members.map((name, i) => (
@@ -206,6 +224,68 @@ const TeamCredits: React.FC = () => {
   );
 };
 
+const SentimentCompass: React.FC<{ bullish: number; bearish: number; summary: string }> = ({ bullish, bearish, summary }) => {
+  const diff = bullish - bearish;
+  const rotation = (diff / 100) * 90; // -90 to 90 degrees
+
+  return (
+    <div className="glass-card p-6 bg-white/60 dark:bg-zinc-950/40 border-zinc-200 dark:border-white/5 flex flex-col relative overflow-hidden group/compass">
+       <div className="flex items-center justify-between mb-8">
+          <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-[0.4em]">Sentiment_Compass</span>
+          <div className="flex gap-4">
+             <div className="flex flex-col items-end">
+                <span className="text-[8px] font-bold text-emerald-500/60 uppercase">Bullish</span>
+                <span className="text-sm font-black text-emerald-500 italic">{bullish}%</span>
+             </div>
+             <div className="flex flex-col items-end">
+                <span className="text-[8px] font-bold text-rose-500/60 uppercase">Bearish</span>
+                <span className="text-sm font-black text-rose-500 italic">{bearish}%</span>
+             </div>
+          </div>
+       </div>
+
+       <div className="relative h-24 flex items-end justify-center mb-6">
+          <div className="absolute inset-0 flex items-end justify-center opacity-10 pointer-events-none">
+             <div className="w-full h-full bg-gradient-to-t from-emerald-500/20 via-transparent to-transparent absolute left-0 origin-bottom transform -rotate-45" />
+             <div className="w-full h-full bg-gradient-to-t from-rose-500/20 via-transparent to-transparent absolute left-0 origin-bottom transform rotate-45" />
+          </div>
+          
+          <div className="w-48 h-24 border-t-2 border-l-2 border-r-2 border-zinc-100 dark:border-zinc-800 rounded-t-full relative flex items-end justify-center">
+             <div 
+               className="absolute bottom-0 w-1 h-20 bg-emerald-500 origin-bottom transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+               style={{ transform: `rotate(${rotation}deg)` }}
+             >
+                <div className="w-3 h-3 bg-emerald-500 rounded-full -top-1 -left-1 absolute border-2 border-white dark:border-black" />
+             </div>
+          </div>
+       </div>
+
+       <div className="p-3 bg-zinc-50 dark:bg-black/40 border border-zinc-100 dark:border-white/5 rounded-xl">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 italic leading-relaxed font-medium">"{summary}"</p>
+       </div>
+    </div>
+  );
+};
+
+const MetricBlock: React.FC<{ title: string; metrics: Metric[] }> = ({ title, metrics }) => (
+  <div className="space-y-4">
+    <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-2">
+       <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-700 tracking-[0.3em]">{title}</span>
+    </div>
+    <div className="grid grid-cols-2 gap-3">
+       {metrics.map((m, i) => (
+         <div key={i} className="p-3 bg-white/50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-white/5 rounded-xl shadow-sm hover:border-emerald-500/20 transition-all group/m">
+            <div className="flex items-center justify-between mb-1">
+               <span className="text-[7px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-600 truncate">{m.label}</span>
+               <div className={`w-1.5 h-1.5 rounded-full ${m.status === 'positive' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : m.status === 'negative' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]' : 'bg-zinc-400'}`} />
+            </div>
+            <span className="text-sm font-black text-zinc-900 dark:text-zinc-200 italic truncate block">{m.value}</span>
+         </div>
+       ))}
+    </div>
+  </div>
+);
+
 // --- Application ---
 
 export default function App() {
@@ -213,6 +293,9 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [liveMode, setLiveMode] = useState(true);
+  const [hasApiKey, setHasApiKey] = useState(false);
+  
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('riskit-theme') as 'light' | 'dark') || 'dark';
   });
@@ -229,6 +312,14 @@ export default function App() {
   const [pulseSources, setPulseSources] = useState<GroundingSource[]>([]);
 
   useEffect(() => {
+    const checkApiKey = async () => {
+      const selected = await (window as any).aistudio?.hasSelectedApiKey();
+      setHasApiKey(selected);
+    };
+    checkApiKey();
+  }, []);
+
+  useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -243,14 +334,29 @@ export default function App() {
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
+  const handleOpenKeySelector = async () => {
+    await (window as any).aistudio?.openSelectKey();
+    setHasApiKey(true);
+  };
+
   const handleError = (e: any) => {
-    setApiError(e?.message || "Communication protocol failure.");
+    const msg = e?.message || "Communication protocol failure.";
+    if (msg.includes("Requested entity was not found")) {
+      setHasApiKey(false);
+      setApiError("Authentication expired. Please re-connect AI session.");
+    } else {
+      setApiError(msg);
+    }
     setLoading(false);
   };
 
   const handleFetchPulse = async () => {
     setLoading(true); setApiError(null);
-    try { const { items, sources } = await getLogicPulse(); setPulseItems(items); setPulseSources(sources); }
+    try { 
+      const { items, sources } = await getLogicPulse(); 
+      setPulseItems(items); 
+      setPulseSources(sources); 
+    }
     catch (e) { handleError(e); } finally { setLoading(false); }
   };
 
@@ -298,7 +404,6 @@ export default function App() {
               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-black font-black italic shadow-lg shrink-0 text-lg group-hover:scale-110 transition-transform">!</div>
               <h1 className="text-xl font-black tracking-tighter uppercase italic text-zinc-900 dark:text-white truncate">RiskIT</h1>
             </div>
-            {/* Theme Toggle (Sidebar Mobile/Desktop Logo Row) */}
             <button onClick={toggleTheme} className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-900/40 text-zinc-500 dark:text-zinc-400 hover:text-emerald-500 transition-colors lg:hidden">
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -327,13 +432,22 @@ export default function App() {
           <TeamCredits />
         </div>
         
-        <div className="p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-950/20 shrink-0">
-          <div className="flex items-center gap-3 p-3 bg-white dark:bg-black border border-zinc-200 dark:border-white/5 rounded-xl mb-4 relative overflow-hidden group/status">
+        <div className="p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-950/20 shrink-0 space-y-3">
+          {!hasApiKey && (
+            <button 
+              onClick={handleOpenKeySelector}
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-500 text-[9px] font-black uppercase tracking-widest hover:bg-rose-500/20 transition-all group"
+            >
+              <Key size={12} className="group-hover:rotate-12 transition-transform" />
+              Connect Secure AI
+            </button>
+          )}
+          <div className="flex items-center gap-3 p-3 bg-white dark:bg-black border border-zinc-200 dark:border-white/5 rounded-xl relative overflow-hidden group/status">
              <div className="absolute inset-0 bg-emerald-500/5 translate-y-full group-hover/status:translate-y-0 transition-transform" />
              <Cpu size={12} className={`shrink-0 z-10 ${engine !== 'DISCONNECTED' ? 'text-emerald-500' : 'text-rose-500'}`} />
              <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-300 font-bold tracking-tighter truncate z-10 uppercase">{engine}</span>
           </div>
-          <div className="flex justify-between text-[8px] font-mono text-zinc-400 dark:text-zinc-700">
+          <div className="flex justify-between text-[8px] font-mono text-zinc-400 dark:text-zinc-700 px-1">
             <span>SYS_STABILITY</span>
             <span className="text-emerald-500/60 uppercase">OK</span>
           </div>
@@ -349,10 +463,19 @@ export default function App() {
           <div className="flex items-center gap-4">
             <button onClick={() => setIsSidebarOpen(true)} className="text-zinc-400 p-2 rounded-lg lg:hidden"><Menu size={20} /></button>
             <span className="text-[10px] font-black tracking-[0.4em] uppercase text-emerald-500 italic truncate">{activeTab}</span>
+            {recommendations || analysis || comparison || pulseItems.length > 0 ? <LiveSignal /> : null}
           </div>
           
-          {/* Header Actions (Theme Toggle) */}
           <div className="flex items-center gap-3">
+             <button 
+              onClick={() => setLiveMode(!liveMode)}
+              className={`p-2.5 rounded-xl transition-all border shadow-sm active:scale-95 flex items-center gap-2 ${liveMode ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' : 'bg-zinc-100 dark:bg-zinc-900/60 border-zinc-200 dark:border-white/5 text-zinc-400'}`}
+              title={liveMode ? 'Deactivate Live Simulation' : 'Activate Live Simulation'}
+             >
+              {liveMode ? <PulseIcon size={16} className="animate-pulse" /> : <ZapOff size={16} />}
+              <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">{liveMode ? 'Live' : 'Static'}</span>
+             </button>
+
              <button 
               onClick={toggleTheme} 
               className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-500 transition-all border border-zinc-200 dark:border-white/5 shadow-sm active:scale-95"
@@ -401,7 +524,10 @@ export default function App() {
               <div className="glass-card p-6 bg-white dark:bg-zinc-950/20 min-h-[400px] flex flex-col">
                 <div className="flex justify-between items-center mb-6 border-b border-zinc-100 dark:border-white/5 pb-4">
                   <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em]">Strategic Nodes</span>
-                  <RefreshCw size={12} className={`text-zinc-200 dark:text-zinc-800 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+                  <div className="flex gap-2">
+                    {recommendations && <div className="animate-pulse flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /><span className="text-[8px] font-black uppercase text-emerald-500">Node_Synced</span></div>}
+                    <RefreshCw size={12} className={`text-zinc-200 dark:text-zinc-800 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+                  </div>
                 </div>
                 {recommendations ? (
                   <div className="space-y-6 animate-in fade-in duration-500 text-left">
@@ -426,102 +552,144 @@ export default function App() {
 
           {/* PATHFINDER TAB */}
           {activeTab === 'pathfinder' && (
-            <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 w-full">
+            <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500 w-full pb-20">
               <div className="glass-card flex flex-col md:flex-row items-center gap-4 p-6 bg-white dark:bg-zinc-950 relative overflow-hidden group/search shadow-xl dark:shadow-none">
                 {loading && <CardLoader label="Scanning..." />}
                 {apiError && <ErrorOverlay message={apiError} onRetry={() => handlePathfinder()} onDismiss={() => setApiError(null)} />}
                 <Search className="text-zinc-300 dark:text-zinc-800 shrink-0 group-hover/search:text-emerald-500 transition-colors" size={32} />
                 <input 
-                  placeholder="ENTER TICKER..." 
+                  placeholder="ENTER TICKER OR INDEX..." 
                   className="flex-1 bg-transparent text-2xl sm:text-4xl font-black italic uppercase outline-none placeholder:text-zinc-100 dark:placeholder:text-zinc-900 text-zinc-900 dark:text-white tracking-tighter w-full min-w-0" 
                   value={anaInput} 
                   onChange={(e) => setAnaInput(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handlePathfinder()}
                 />
-                <button onClick={() => handlePathfinder()} className="btn-primary w-full md:w-auto px-8 py-3 text-[10px]">Deep Scan</button>
+                <button onClick={() => handlePathfinder()} className="btn-primary w-full md:w-auto px-8 py-3 text-[10px]">Execute Neural Audit</button>
               </div>
 
               {analysis && (
-                <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6 animate-in zoom-in-95 pb-10 text-left items-start">
-                  <div className="glass-card p-6 sm:p-8 bg-white/80 dark:bg-zinc-950/80 border-black/5 dark:border-white/5 relative overflow-hidden min-w-0">
-                    <div className="flex flex-col md:flex-row gap-6 mb-8 items-start md:items-center">
-                      <div className="flex-1 min-w-0">
-                        <h2 className="font-black italic uppercase leading-none text-zinc-900 dark:text-white mb-2 break-words" style={{ fontSize: 'clamp(2rem, 8vw, 4.5rem)' }}>{analysis.ticker}</h2>
-                        <p className="text-sm sm:text-lg text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest italic truncate">{analysis.name}</p>
-                      </div>
-
-                      <div className="bg-zinc-100 dark:bg-black/40 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 flex flex-col items-center gap-2 shrink-0 group/health">
-                        <div className="relative w-24 h-24 flex items-center justify-center">
-                           <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                              <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="10" className="text-zinc-200 dark:text-[#09090b]" />
-                              <circle 
-                                cx="50" cy="50" r="44" fill="none" stroke="#10b981" strokeWidth="10" 
-                                strokeDasharray="276" 
-                                strokeDashoffset={276 * (1 - getNormalizedHealth(analysis.health))} 
-                                strokeLinecap="round" 
-                                className="transition-all duration-1000 ease-out"
-                              />
-                           </svg>
-                           <span className="absolute text-2xl font-black italic text-emerald-500">
-                             <QuantValue value={Math.round(getNormalizedHealth(analysis.health) * 100)} />
-                           </span>
+                <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 animate-in zoom-in-95 text-left items-start">
+                  <div className="space-y-8">
+                    {/* Header Scorecard */}
+                    <div className="glass-card p-6 sm:p-10 bg-white/80 dark:bg-zinc-950/80 border-black/5 dark:border-white/5 relative overflow-hidden min-w-0">
+                      <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-4">
+                             <h2 className="font-black italic uppercase leading-none text-zinc-900 dark:text-white break-words" style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)' }}>{analysis.ticker}</h2>
+                             <div className="px-3 py-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[9px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest mt-2">MKT_ASSET</div>
+                          </div>
+                          <p className="text-sm sm:text-xl text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-[0.2em] italic truncate">{analysis.name}</p>
                         </div>
-                        <span className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-widest group-hover/health:text-emerald-500 transition-colors">Health_Index</span>
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-                      {analysis.metrics.map((m, i) => (
-                        <div key={i} className="p-3 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-xl flex flex-col min-w-0 group/metric hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors shadow-sm">
-                           <span className="text-[7px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-700 mb-0.5 truncate group-hover/metric:text-zinc-600 dark:group-hover/metric:text-zinc-500">{m.label}</span>
-                           <span className="text-sm font-black text-zinc-700 dark:text-zinc-200 italic truncate">{m.value}</span>
+                        <div className="flex items-center gap-6 shrink-0">
+                           <div className="flex flex-col items-center gap-2">
+                             <div className="relative w-28 h-28 flex items-center justify-center">
+                                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                                   <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="8" className="text-zinc-100 dark:text-[#09090b]" />
+                                   <circle 
+                                     cx="50" cy="50" r="44" fill="none" stroke="#10b981" strokeWidth="8" 
+                                     strokeDasharray="276" 
+                                     strokeDashoffset={276 * (1 - getNormalizedHealth(analysis.health))} 
+                                     strokeLinecap="round" 
+                                     className="transition-all duration-1000 ease-out"
+                                   />
+                                </svg>
+                                <div className="absolute flex flex-col items-center">
+                                   <span className="text-2xl font-black italic text-emerald-500 leading-none">
+                                     <QuantValue value={Math.round(getNormalizedHealth(analysis.health) * 100)} liveUpdate={liveMode} />
+                                   </span>
+                                   <span className="text-[7px] font-black uppercase text-zinc-400 mt-1">Health</span>
+                                </div>
+                             </div>
+                           </div>
+
+                           <div className="h-16 w-px bg-zinc-200 dark:bg-zinc-800" />
+
+                           <div className="flex flex-col items-center gap-1">
+                              <span className="text-4xl font-black italic text-zinc-900 dark:text-white leading-none">{analysis.riskScore}</span>
+                              <span className="text-[8px] font-black uppercase text-rose-500 tracking-[0.2em]">Risk_Rating</span>
+                           </div>
                         </div>
-                      ))}
+                      </div>
+
+                      <div className="mt-10 p-5 bg-zinc-50 dark:bg-black border border-zinc-100 dark:border-white/5 rounded-2xl relative shadow-inner">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500/20" />
+                        <p className="text-sm sm:text-lg text-zinc-500 dark:text-zinc-400 italic leading-relaxed break-words pl-4">"{analysis.desc}"</p>
+                      </div>
                     </div>
 
-                    <div className="p-4 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-white/5 rounded-xl mb-8 relative shadow-inner">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/20" />
-                      <p className="text-sm sm:text-base text-zinc-500 dark:text-zinc-400 italic leading-relaxed break-words pl-2">"{analysis.desc}"</p>
+                    {/* Market Relevant Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <MetricBlock title="Fundamental Pillars" metrics={analysis.fundamentals} />
+                       <MetricBlock title="Technical Momentum" metrics={analysis.technicals} />
                     </div>
 
-                    {/* MARKET SENTIMENT SECTION */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-2">
-                        <Activity size={14} className="text-zinc-300 dark:text-zinc-700" />
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-700">Market Sentiment Scan</h3>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        {analysis.sentiment?.map((s, i) => (
-                          <RadialSentimentChart key={i} label={s.label} score={s.score} />
-                        ))}
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <SentimentCompass 
+                         bullish={analysis.sentiment.bullish} 
+                         bearish={analysis.sentiment.bearish} 
+                         summary={analysis.sentiment.summary} 
+                       />
+                       
+                       <div className="glass-card p-6 bg-white/60 dark:bg-zinc-950/40 border-zinc-200 dark:border-white/5 flex flex-col justify-between">
+                          <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-2 mb-4">
+                             <BarChart3 size={14} className="text-zinc-300 dark:text-zinc-700" />
+                             <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-700 tracking-[0.3em]">Conviction_Tiers</span>
+                          </div>
+                          <div className="space-y-6">
+                             <div className="flex items-center justify-between group/outlook">
+                                <div>
+                                   <span className="text-[7px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block mb-1">Bias_Vector</span>
+                                   <span className="text-emerald-500 font-black italic text-sm uppercase group-hover:translate-x-1 transition-transform inline-block">{analysis.short}</span>
+                                </div>
+                                <TrendingUp size={24} className="text-emerald-500/20 group-hover:text-emerald-500 transition-colors" />
+                             </div>
+                             <div className="h-px bg-zinc-100 dark:bg-zinc-900" />
+                             <div className="flex items-center justify-between group/long">
+                                <div>
+                                   <span className="text-[7px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block mb-1">Stability_Metric</span>
+                                   <span className="text-blue-500 font-black italic text-sm uppercase group-hover:translate-x-1 transition-transform inline-block">{analysis.long}</span>
+                                </div>
+                                <Shield size={24} className="text-blue-500/20 group-hover:text-blue-500 transition-colors" />
+                             </div>
+                          </div>
+                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="glass-card p-5 bg-white dark:bg-zinc-950/60 space-y-4 shadow-xl border-zinc-200 dark:border-white/5">
-                       <h3 className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-widest border-b border-zinc-100 dark:border-white/5 pb-2">Risk Catalysts</h3>
-                       <div className="space-y-2">
+                  <div className="space-y-8 sticky top-24">
+                    {/* Risk Catalysts Section */}
+                    <div className="glass-card p-6 bg-white dark:bg-zinc-950/60 shadow-xl border-zinc-200 dark:border-white/5">
+                       <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-3 mb-6">
+                          <OctagonAlert size={16} className="text-rose-500" />
+                          <h3 className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-600 tracking-widest">Active Risk Catalysts</h3>
+                       </div>
+                       
+                       <div className="space-y-4">
                           {analysis.catalysts.map((cat, i) => (
-                            <div key={i} className="p-3 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-white/5 rounded-lg group/cat hover:border-rose-500/20 transition-all shadow-sm">
-                               <div className="flex items-center justify-between mb-1">
-                                 <span className={`text-[7px] font-black px-1.5 py-0.5 rounded border ${cat.impact === 'high' ? 'text-rose-500 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]' : 'text-orange-500 border-orange-500/20 shadow-[0_0_10px_rgba(249,115,22,0.1)]'}`}>{cat.impact.toUpperCase()}</span>
-                                 <AlertCircle size={10} className="text-zinc-300 dark:text-zinc-800 group-hover/cat:text-zinc-600" />
+                            <div key={i} className="group/cat relative p-4 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-white/5 rounded-2xl hover:border-rose-500/20 transition-all shadow-sm">
+                               <div className="flex items-center justify-between mb-2">
+                                 <span className={`text-[8px] font-black px-2 py-0.5 rounded border ${cat.impact === 'high' ? 'text-rose-500 border-rose-500/20 bg-rose-500/5' : cat.impact === 'medium' ? 'text-orange-500 border-orange-500/20 bg-orange-500/5' : 'text-zinc-400 border-zinc-200 dark:border-white/10'}`}>
+                                   {cat.impact.toUpperCase()}_IMPACT
+                                 </span>
+                                 <InfoIcon size={12} className="text-zinc-300 dark:text-zinc-800 opacity-0 group-hover/cat:opacity-100 transition-opacity" />
                                </div>
-                               <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 italic block leading-tight group-hover/cat:text-zinc-900 dark:group-hover/cat:text-zinc-200 transition-colors">"{cat.title}"</span>
+                               <h4 className="text-[12px] font-black text-zinc-800 dark:text-zinc-200 italic mb-2 leading-tight uppercase">{cat.title}</h4>
+                               <p className="text-[10px] text-zinc-500 dark:text-zinc-500 leading-relaxed font-medium">
+                                 {cat.description}
+                               </p>
                             </div>
                           ))}
                        </div>
                     </div>
-                    <div className="glass-card p-5 bg-white dark:bg-zinc-950/60 space-y-4 text-left border-l-2 border-l-emerald-500/20 border-zinc-200 dark:border-white/5">
-                       <div className="flex items-center justify-between group/bull">
-                         <div className="min-w-0"><span className="text-[7px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block mb-0.5">Bullish_Outlook</span><span className="text-emerald-600 dark:text-emerald-500 font-black italic text-xs truncate block uppercase">{analysis.short}</span></div>
-                         <BullIcon size={16} className="text-emerald-500/20 dark:text-emerald-950/40 group-hover/bull:text-emerald-500 transition-colors" />
+
+                    {/* Data Verification Footer */}
+                    <div className="p-4 bg-zinc-100/50 dark:bg-zinc-900/30 rounded-2xl border border-zinc-200 dark:border-white/5">
+                       <div className="flex items-center gap-2 mb-2">
+                          <Globe size={10} className="text-zinc-400" />
+                          <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Grounding_Context</span>
                        </div>
-                       <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-white/5 group/stability">
-                         <div className="min-w-0"><span className="text-[7px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block mb-0.5">Stability_Rating</span><span className="text-blue-600 dark:text-blue-500 font-black italic text-xs truncate block uppercase">{analysis.long}</span></div>
-                         <Shield size={16} className="text-blue-500/20 dark:text-blue-950/40 group-hover/stability:text-blue-500 transition-colors" />
-                       </div>
+                       <SourceLink sources={analysis.sources || []} />
                     </div>
                   </div>
                 </div>
@@ -559,12 +727,10 @@ export default function App() {
                 ))}
               </div>
               
-              {/* DUAL TERMINAL INTERFACE */}
               <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-stretch relative text-left px-4">
                 {loading && <CardLoader label="Synthesizing Duel Logic..." />}
                 {apiError && <ErrorOverlay message={apiError} onRetry={() => handleComparator()} onDismiss={() => setApiError(null)} />}
                 
-                {/* NODE ALPHA - BLUE THEME */}
                 <div className="glass-card p-6 sm:p-10 bg-blue-500/[0.03] dark:bg-blue-600/[0.02] border-blue-500/20 dark:border-blue-500/40 shadow-[0_0_50px_rgba(37,99,235,0.08)] hover:border-blue-500/50 group/alpha transition-all relative overflow-hidden">
                    <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600/30 rounded-l-[var(--radius-xl)]" />
                    <div className="flex items-center justify-between mb-8">
@@ -581,7 +747,6 @@ export default function App() {
                        value={compInputs.s1} 
                        onChange={(e) => setCompInputs({ ...compInputs, s1: e.target.value.toUpperCase() })} 
                      />
-                     <div className="absolute inset-x-0 bottom-0 h-1 bg-blue-500/10 scale-x-0 group-focus-within/field:scale-x-100 transition-transform origin-center" />
                    </div>
                 </div>
 
@@ -592,7 +757,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* NODE BETA - ROSE THEME */}
                 <div className="glass-card p-6 sm:p-10 bg-rose-500/[0.03] dark:bg-rose-600/[0.02] border-rose-500/20 dark:border-rose-500/40 shadow-[0_0_50px_rgba(225,29,72,0.08)] hover:border-rose-500/50 group/beta transition-all relative overflow-hidden text-right">
                    <div className="absolute top-0 right-0 w-1.5 h-full bg-rose-600/30 rounded-r-[var(--radius-xl)]" />
                    <div className="flex items-center justify-between mb-8">
@@ -609,7 +773,6 @@ export default function App() {
                        value={compInputs.s2} 
                        onChange={(e) => setCompInputs({ ...compInputs, s2: e.target.value.toUpperCase() })} 
                      />
-                     <div className="absolute inset-x-0 bottom-0 h-1 bg-rose-500/10 scale-x-0 group-focus-within/field-b:scale-x-100 transition-transform origin-center" />
                    </div>
                 </div>
               </div>
@@ -627,7 +790,6 @@ export default function App() {
               
               {comparison && (
                 <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8 animate-in zoom-in-95 mt-10 px-4">
-                  {/* WINNER SPOTLIGHT */}
                   <div className={`glass-card p-10 flex flex-col justify-center relative rounded-[2rem] overflow-hidden text-left shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] transition-all duration-700 ${comparison.winner === compInputs.s1 ? 'bg-blue-600/10 dark:bg-blue-900/40 border-blue-500/40' : 'bg-rose-600/10 dark:bg-rose-900/40 border-rose-500/40'}`}>
                     <div className="absolute top-0 right-0 p-6 opacity-[0.1] dark:opacity-[0.05] pointer-events-none group-hover:scale-110 transition-transform"><Trophy size={120} /></div>
                     <div className="flex items-center gap-2 mb-8">
@@ -644,7 +806,6 @@ export default function App() {
                     </div>
                   </div>
                   
-                  {/* SCORECARD SECTIONS */}
                   <div className="glass-card p-8 sm:p-12 bg-white/90 dark:bg-zinc-950/70 border-zinc-200 dark:border-white/10 rounded-[2rem] min-w-0 shadow-2xl text-left relative overflow-hidden backdrop-blur-3xl">
                     <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-zinc-200 dark:via-zinc-800 to-rose-500 opacity-40" />
                     <div className="flex items-center justify-between mb-16 pb-6 border-b border-zinc-100 dark:border-white/5">
@@ -656,42 +817,35 @@ export default function App() {
                       {comparison.scorecard.map((s, i) => (
                         <div key={i} className="group/metric-row relative">
                           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-end gap-6 mb-6">
-                            {/* Alpha Value */}
                             <div className="flex flex-col bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100/50 dark:border-blue-900/20 transition-all hover:border-blue-500/30">
                               <span className="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] mb-2">{compInputs.s1 || 'ALPHA'}</span>
                               <span className="text-2xl sm:text-3xl font-black italic text-blue-900 dark:text-blue-100 truncate tracking-tighter">{s.s1Value}</span>
                             </div>
                             
-                            {/* Metric Label */}
                             <div className="flex flex-col items-center justify-center pb-2">
                                 <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.4em] whitespace-nowrap px-4 py-1.5 bg-zinc-50 dark:bg-zinc-900 rounded-full border border-zinc-100 dark:border-zinc-800 shadow-sm">{s.label}</span>
                             </div>
                             
-                            {/* Beta Value */}
                             <div className="flex flex-col text-right bg-rose-50/50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100/50 dark:border-rose-900/20 transition-all hover:border-rose-500/30">
                               <span className="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] mb-2">{compInputs.s2 || 'BETA'}</span>
                               <span className="text-2xl sm:text-3xl font-black italic text-rose-900 dark:text-rose-100 truncate tracking-tighter">{s.s2Value}</span>
                             </div>
                           </div>
                           
-                          {/* COMPARATIVE SPECTRUM BAR */}
                           <div className="relative h-4 bg-zinc-100 dark:bg-zinc-900 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-inner overflow-hidden flex">
                              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-transparent to-rose-500/10 pointer-events-none" />
-                             {/* Alpha Segment */}
                              <div 
                               className="h-full bg-gradient-to-r from-blue-700 to-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-1000 ease-out relative group-hover/metric-row:brightness-110" 
                               style={{ width: `${s.s1Percent / (s.s1Percent + s.s2Percent) * 100}%` }}
                              >
                                <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-white/30 blur-[2px]" />
                              </div>
-                             {/* Beta Segment */}
                              <div 
                               className="h-full bg-gradient-to-l from-rose-700 to-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.4)] transition-all duration-1000 ease-out relative group-hover/metric-row:brightness-110" 
                               style={{ width: `${s.s2Percent / (s.s1Percent + s.s2Percent) * 100}%` }}
                              >
                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-white/30 blur-[2px]" />
                              </div>
-                             {/* Center Deadzone Marker */}
                              <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-white dark:bg-black/90 z-20 shadow-[0_0_15px_black]" />
                           </div>
                         </div>
@@ -721,24 +875,36 @@ export default function App() {
                   <button onClick={handleFetchPulse} className="w-10 h-10 glass-card items-center justify-center text-emerald-500 hover:text-emerald-400 active:scale-95 transition-all shadow-lg hover:border-emerald-500/20"><RefreshCw size={18} className={loading ? 'animate-spin' : ''} /></button>
                </div>
                
-               <div className="space-y-3 px-4">
-                  {loading && <CardLoader label="Syncing..." />}
+               <div className="space-y-3 px-4 min-h-[400px]">
+                  {loading && <CardLoader label="Syncing Intelligence..." />}
                   {apiError && <ErrorOverlay message={apiError} onRetry={handleFetchPulse} onDismiss={() => setApiError(null)} />}
-                  {pulseItems.map((item, i) => (
-                    <div key={i} className="group glass-card flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all border-l-2 border-l-zinc-100 dark:border-l-zinc-900 hover:border-l-emerald-500 cursor-pointer text-left gap-4 overflow-hidden shadow-sm hover:shadow-md">
-                      <div className="flex items-start md:items-center gap-4 min-w-0">
-                        <div className="text-left md:text-center min-w-[70px] shrink-0">
-                          <span className="block font-mono text-zinc-400 dark:text-zinc-700 text-[9px] mb-1">{item.time}</span>
-                          <div className={`text-[7px] font-black px-1.5 py-0.5 rounded border inline-block ${item.impact === 'High' ? 'text-rose-500 border-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.1)]' : 'text-emerald-500 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]'}`}>{item.impact}</div>
+                  
+                  {pulseItems.length > 0 ? (
+                    pulseItems.map((item, i) => (
+                      <div key={i} className="group glass-card flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all border-l-2 border-l-zinc-100 dark:border-l-zinc-900 hover:border-l-emerald-500 cursor-pointer text-left gap-4 overflow-hidden shadow-sm hover:shadow-md relative">
+                        {i === 0 && <div className="absolute top-0 right-0 p-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" /></div>}
+                        <div className="flex items-start md:items-center gap-4 min-w-0">
+                          <div className="text-left md:text-center min-w-[70px] shrink-0">
+                            <span className="block font-mono text-zinc-400 dark:text-zinc-700 text-[9px] mb-1">{item.time || 'NOW'}</span>
+                            <div className={`text-[7px] font-black px-1.5 py-0.5 rounded border inline-block ${item.impact?.toLowerCase() === 'high' ? 'text-rose-500 border-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.2)]' : 'text-emerald-500 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.2)]'}`}>
+                              {item.impact?.toUpperCase() || 'NORMAL'}
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-black text-zinc-700 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white transition-colors text-base mb-1 uppercase italic truncate leading-tight">{item.title}</h4>
+                            <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-[0.2em]">{item.sector || 'GENERAL'}</span>
+                          </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="font-black text-zinc-700 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white transition-colors text-base mb-1 uppercase italic truncate">{item.title}</h4>
-                          <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">{item.sector}</span>
-                        </div>
+                        <ArrowRight size={20} className="hidden md:block text-zinc-200 dark:text-zinc-900 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all shrink-0" />
                       </div>
-                      <ArrowRight size={20} className="hidden md:block text-zinc-200 dark:text-zinc-900 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all shrink-0" />
+                    ))
+                  ) : !loading && !apiError && (
+                    <div className="flex flex-col items-center justify-center py-20 opacity-30">
+                      <PulseIcon size={48} className="text-zinc-400 mb-4 animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Feed_Empty_Signal</span>
+                      <button onClick={handleFetchPulse} className="mt-4 text-emerald-500 hover:text-emerald-400 text-[9px] font-bold uppercase underline">Manual Sync</button>
                     </div>
-                  ))}
+                  )}
                   <SourceLink sources={pulseSources} />
                </div>
             </div>
@@ -750,61 +916,16 @@ export default function App() {
   );
 }
 
-const RadialSentimentChart: React.FC<{ label: string; score: number }> = ({ label, score }) => {
-  const isBullish = label.toLowerCase().includes('bull');
-  const color = isBullish ? '#10b981' : '#f43f5e';
-  const glowClass = isBullish ? 'animate-glow-pulse' : 'animate-flicker';
-  const Icon = isBullish ? BullIcon : BearIcon;
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-
-  return (
-    <div className="glass-card p-6 bg-white/60 dark:bg-zinc-900/40 border-zinc-100 dark:border-white/5 flex flex-col items-center justify-center shadow-md dark:shadow-lg group/sent hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition-all relative">
-      <div className="absolute top-2 right-4 opacity-10 group-hover:opacity-20 transition-opacity"><Icon size={40} className="text-zinc-300 dark:text-zinc-700" /></div>
-      <div className="relative w-28 h-28 flex items-center justify-center mb-4">
-        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-          <circle cx="50" cy="50" r={radius} fill="none" stroke="currentColor" strokeWidth="10" className="text-zinc-100 dark:text-[#0f0f0f]" />
-          <circle 
-            cx="50" cy="50" r={radius} fill="none" stroke={color} strokeWidth="10" 
-            strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" 
-            className="transition-all duration-1000 ease-out drop-shadow-[0_0_8px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]"
-            style={{ filter: `drop-shadow(0 0 6px ${color}22)` }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-black italic tracking-tighter" style={{ color }}>
-            <QuantValue value={score} />%
-          </span>
-          <Icon size={16} style={{ color }} className={`mt-1 ${glowClass}`} />
-        </div>
-      </div>
-      <div className="text-center">
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-200 block mb-1">{label}</span>
-        <div className="w-12 h-0.5 bg-zinc-100 dark:bg-white/5 mx-auto rounded-full overflow-hidden">
-          <div className="h-full bg-emerald-500/20 animate-pulse" style={{ width: `${score}%` }} />
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const SourceLink: React.FC<{ sources: GroundingSource[] }> = ({ sources }) => {
   if (!sources?.length) return null;
   return (
-    <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-white/5 text-left">
-      <div className="flex items-center gap-2 mb-4">
-        <Globe size={12} className="text-zinc-300 dark:text-zinc-800" />
-        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300 dark:text-zinc-800">Verified_Context</span>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {sources.map((s, i) => (
-          <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-white/5 rounded-lg hover:border-emerald-500/40 transition-all group overflow-hidden shadow-sm hover:shadow-emerald-500/[0.03]">
-            <span className="text-[9px] text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 truncate pr-4 font-bold uppercase">{s.title}</span>
-            <ExternalLink size={10} className="text-zinc-300 dark:text-zinc-800 group-hover:text-emerald-500 transition-colors shrink-0" />
-          </a>
-        ))}
-      </div>
+    <div className="mt-2 space-y-2">
+       {sources.slice(0, 3).map((s, i) => (
+         <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2 bg-white dark:bg-black/20 border border-zinc-100 dark:border-white/5 rounded-lg hover:border-emerald-500/30 transition-all group overflow-hidden">
+           <span className="text-[8px] text-zinc-400 group-hover:text-zinc-200 truncate pr-4 font-bold uppercase">{s.title}</span>
+           <ExternalLink size={8} className="text-zinc-300 dark:text-zinc-700 group-hover:text-emerald-500" />
+         </a>
+       ))}
     </div>
   );
 };
